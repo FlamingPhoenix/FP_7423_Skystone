@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Log;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -54,6 +55,8 @@ public class AutoRedDepot extends LinearOpMode {
     public float PPR = 1120F;  // 560 for new robot 1120 for old robot
     protected LinearOpMode op;
 
+    public MyBoschIMU imu;
+
 
     protected PositionToImage lastKnownPosition;
 
@@ -71,6 +74,10 @@ public class AutoRedDepot extends LinearOpMode {
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
         com.vuforia.Vuforia VU = new com.vuforia.Vuforia();
+
+        MyBoschIMU imu = new MyBoschIMU(hardwareMap);
+
+        imu.initialize(new BNO055IMU.Parameters());
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters param = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
@@ -116,7 +123,11 @@ public class AutoRedDepot extends LinearOpMode {
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
 
         waitForStart();
-        StrafeToImage(0.3f, stoneTarget, this, 10);
+        strafeDistance(imu);
+        //StrafeToImage(0.3f, stoneTarget, this, 10);
+            getObstacleDistance();
+            telemetry.update();
+
     }
 
 
@@ -158,9 +169,46 @@ public class AutoRedDepot extends LinearOpMode {
         return 0;
     }
 
-    public void getObstacleDistance() {
+    public void getObstacleDistance()
+    {
         double d = distanceSensor.getDistance(DistanceUnit.INCH);
         telemetry.addData("Obstacle Distance: ", "%f", d);
+    }
+
+    public void strafeDistance(MyBoschIMU imu)
+    {
+        float robotStartingAngle = imu.getAngularOrientation().firstAngle;
+        float robotCurrentAngle;
+        double d = distanceSensor.getDistance(DistanceUnit.INCH);
+
+        while (d > 3)
+        {
+            robotCurrentAngle = imu.getAngularOrientation().firstAngle;
+            if (robotCurrentAngle - robotStartingAngle >= 3) { // 3 degrees or more
+                fl.setPower(-0.3);
+                fr.setPower(0.3);
+                bl.setPower(0.5);
+                br.setPower(-0.5);
+            }
+            else if (robotCurrentAngle - robotStartingAngle <= -3) { // -3 degrees or more
+                fl.setPower(-0.5);
+                fr.setPower(0.5);
+                bl.setPower(0.3);
+                br.setPower(-0.3);
+            }
+            else {
+                fl.setPower(-0.3);
+                fr.setPower(0.3);
+                bl.setPower(0.3);
+                br.setPower(-0.3);
+            }
+
+            d = distanceSensor.getDistance(DistanceUnit.INCH);
+
+            telemetry.addData("Obstacle Distance: ", "%f", d);
+            telemetry.update();
+        }
+            StopAll();
     }
 
     public void StopAll(){
