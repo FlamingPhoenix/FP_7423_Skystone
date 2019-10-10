@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.vuforia.CameraDevice;
 import com.vuforia.HINT;
 
@@ -33,6 +34,9 @@ public class AutoRedDepot extends LinearOpMode {
     public DcMotor fr;
     public DcMotor bl;
     public DcMotor br;
+
+    public Servo twister;
+    public DistanceSensor stoneScanner;
 
     public VuforiaTrackable stoneTarget;
     public VuforiaTrackable redRearBridge;
@@ -121,12 +125,22 @@ public class AutoRedDepot extends LinearOpMode {
         rear2.setName("rear2");
 
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
+        stoneScanner = hardwareMap.get(DistanceSensor.class, "stoneScanner");
 
         waitForStart();
-        strafeDistance(imu);
-        //StrafeToImage(0.3f, stoneTarget, this, 10);
-            getObstacleDistance();
+
+        for (float pulse = -1; pulse <= 1; pulse+=.05){
+
+            twister.setPosition(pulse);
+            double stoneD = getStoneDistance();
+
+            Log.i("[phoenix:PlotAngVel]", String.format("%f: %f: %f",
+                    pulse, stoneD));
+
             telemetry.update();
+        }
+
+        wait(500);
 
     }
 
@@ -167,6 +181,14 @@ public class AutoRedDepot extends LinearOpMode {
             return d;
         }
         return 0;
+    }
+
+    //used to test the rotating stone distance sensor
+    public double getStoneDistance()
+    {
+        double stoneD = stoneScanner.getDistance(DistanceUnit.INCH);
+        telemetry.addData("Stone Distance: ", "%f", stoneD);
+        return stoneD;
     }
 
     public void getObstacleDistance()
