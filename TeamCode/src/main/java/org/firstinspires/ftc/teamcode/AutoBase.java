@@ -67,7 +67,7 @@ public abstract class AutoBase extends LinearOpMode {
 
     protected PositionToImage lastKnownPosition;
 
-    public void initialize()
+    public float initialize()
     {
         lastKnownPosition = new PositionToImage(); //instantiate this first
 
@@ -128,6 +128,9 @@ public abstract class AutoBase extends LinearOpMode {
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
         stoneScanner = hardwareMap.get(DistanceSensor.class, "stoneScanner");
 
+        float robotStartingAngle = imu.getAngularOrientation().firstAngle;
+        return robotStartingAngle;
+
     }
 
     private float Max(float x1, float x2, float x3, float x4) {
@@ -168,35 +171,32 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     //used to test the rotating stone distance sensor
-    public double getStoneDistance()
-    {
-        double stoneD = stoneScanner.getDistance(DistanceUnit.INCH);
-        telemetry.addData("Stone Distance: ", "%f", stoneD);
-        return stoneD;
-    }
 
-    public void getObstacleDistance()
+    public double getObstacleDistance()
     {
         double d = distanceSensor.getDistance(DistanceUnit.INCH);
         telemetry.addData("Obstacle Distance: ", "%f", d);
+        return d;
     }
 
-    public void strafeDistance(MyBoschIMU imu)
+    public double DriveUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu)
     {
-        float robotStartingAngle = imu.getAngularOrientation().firstAngle;
         float robotCurrentAngle;
         double d = distanceSensor.getDistance(DistanceUnit.INCH);
 
-        while (d > 3)
+        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        while (d > safetyDistance)
         {
             robotCurrentAngle = imu.getAngularOrientation().firstAngle;
-            if (robotCurrentAngle - robotStartingAngle >= 3) { // 3 degrees or more
+            if (robotCurrentAngle - robotStartingAngle >= 93) { // 3 degrees or more
                 fl.setPower(-0.3);
                 fr.setPower(0.3);
                 bl.setPower(0.5);
                 br.setPower(-0.5);
             }
-            else if (robotCurrentAngle - robotStartingAngle <= -3) { // -3 degrees or more
+            else if (robotCurrentAngle - robotStartingAngle <= 87) { // -3 degrees or more
                 fl.setPower(-0.5);
                 fr.setPower(0.5);
                 bl.setPower(0.3);
@@ -215,6 +215,8 @@ public abstract class AutoBase extends LinearOpMode {
             telemetry.update();
         }
         StopAll();
+        double driveDistance = fl.getCurrentPosition();
+        return driveDistance;
     }
 
     public void StopAll(){
@@ -276,7 +278,7 @@ public abstract class AutoBase extends LinearOpMode {
         fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         int currentPosition = 0;
 
-        //added code below to support reverse driving, tested Oct 29, Erik did ofc this
+        //added code below to support reverse driving, tested Oct 29, Erik did this
 
         if (d == Direction.BACKWARD) {
             power = -1 * power;
@@ -410,7 +412,7 @@ public abstract class AutoBase extends LinearOpMode {
                 float flPower, frPower, blPower, brPower;
 
                 flPower = actualPower + additionalpower + flTurnAdjust;
-                frPower = (-actualPower + additionalpower) * 1.2F;
+                frPower = (-actualPower + additionalpower);
                 blPower = -actualPower + additionalpower + blTurnAdjust;
                 brPower = actualPower + additionalpower;
 
@@ -439,5 +441,6 @@ public abstract class AutoBase extends LinearOpMode {
             this.Strafe(0.5F, remainDistance, Direction.RIGHT);
         opMode.telemetry.update();
     }
+
 }
 
