@@ -13,6 +13,6 @@ public class AutoBlueLoad extends AutoBase {
 
         waitForStart();
 
-        Drive(0.5f, 1, Direction.FORWARD);
+        DriveToMatrix(-381, 610);
     }
 }

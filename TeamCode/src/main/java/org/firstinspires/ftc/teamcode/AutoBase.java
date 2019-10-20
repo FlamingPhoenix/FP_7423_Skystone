@@ -30,6 +30,8 @@ import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
 import org.firstinspires.ftc.teamcode.MyClass.PositionToImage;
 import org.firstinspires.ftc.teamcode.MyClass.SkystonePosition;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
@@ -67,11 +69,12 @@ public abstract class AutoBase extends LinearOpMode {
     protected LinearOpMode op;
 
     public MyBoschIMU imu;
+    VuforiaTrackables targetsSkyStone;
 
     // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
     // We will define some constants and conversions here
-    private static final float mmPerInch        = 25.4f;
-    private static final float mmTargetHeight   = (6) * mmPerInch;          // the height of the center of the target image above the floor
+    private static final float mmPerInch = 25.4f;
+    private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
 
     // Constant for Stone Target
     private static final float stoneZ = 2.00f * mmPerInch;
@@ -85,12 +88,11 @@ public abstract class AutoBase extends LinearOpMode {
 
     // Constants for perimeter targets
     private static final float halfField = 72 * mmPerInch;
-    private static final float quadField  = 36 * mmPerInch;
+    private static final float quadField = 36 * mmPerInch;
 
     protected PositionToImage lastKnownPosition;
 
-    public void initialize()
-    {
+    public void initialize() {
         lastKnownPosition = new PositionToImage(); //instantiate this first
 
         fl = hardwareMap.dcMotor.get("frontleft");
@@ -108,8 +110,8 @@ public abstract class AutoBase extends LinearOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters param = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-        com.vuforia.Vuforia.setInitParameters(null, 3, "" );
-        CameraDevice.getInstance().setField("iso","100");
+        com.vuforia.Vuforia.setInitParameters(null, 3, "");
+        CameraDevice.getInstance().setField("iso", "100");
         param.vuforiaLicenseKey = "AbYPrgD/////AAAAGbvKMH3NcEVFmPLgunQe4K0d1ZQi+afRLxricyooCq+sgY9Yh1j+bBrd0CdDCcoieA6trLCKBzymC515+Ps/FECtXv3+CTW6fg3/3+nvKZ6QA18h/cNZHg5HYHmghlcCgVUmSzOLRvdOpbS4S+0Y/sWGXwFK0PbuGPSN82w8XPDBoRYSWjAf8GXeitmNSlm9n4swrMoYNpMDuWCDjSm1kWnoErjFA9NuNoFzAgO+C/rYzoYjTJRk40ETVcAsahzatRlP7PJCvNNXiBhE6iVR+x7lFlTZ841xifOIOPkfVc54olC5XYe4A5ZmQ6WFD03W5HHdQrnmKPmkgcr1yqXAJ3rLTK8FZK3KVgbxz3Eeqps0";
         //param.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         param.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
@@ -117,11 +119,9 @@ public abstract class AutoBase extends LinearOpMode {
 
         vuforia = ClassFactory.getInstance().createVuforia(param);
 
-        VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
         targetsSkyStone.activate();
 
-        stoneTarget = targetsSkyStone.get(0);
-        stoneTarget.setName("stoneTarget");
         redRearBridge = targetsSkyStone.get(1);
         redRearBridge.setName("redRearBridge");
         blueRearBridge = targetsSkyStone.get(2);
@@ -174,7 +174,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         front1.setLocation(OpenGLMatrix
                 .translation(-halfField, -quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0 , 90)));
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
 
         front2.setLocation(OpenGLMatrix
                 .translation(-halfField, quadField, mmTargetHeight)
@@ -190,7 +190,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         rear1.setLocation(OpenGLMatrix
                 .translation(halfField, quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0 , -90)));
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
         rear2.setLocation(OpenGLMatrix
                 .translation(halfField, -quadField, mmTargetHeight)
@@ -216,8 +216,7 @@ public abstract class AutoBase extends LinearOpMode {
         return m;
     }
 
-    public float aquireStoneTarget()
-    {
+    public float aquireStoneTarget() {
         VuforiaTrackableDefaultListener imageListener = (VuforiaTrackableDefaultListener) stoneTarget.getListener();
 
 
@@ -238,37 +237,32 @@ public abstract class AutoBase extends LinearOpMode {
 
     //used to test the rotating stone distance sensor
 
-    public double getObstacleDistance()
-    {
+    public double getObstacleDistance() {
         double d = distanceSensor.getDistance(DistanceUnit.INCH);
         telemetry.addData("Obstacle Distance: ", "%f", d);
         return d;
     }
 
-    public double DriveUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu)
-    {
+    public double DriveUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
         float robotCurrentAngle;
         double d = distanceSensor.getDistance(DistanceUnit.INCH);
 
         fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
         fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        while (d > safetyDistance)
-        {
+        while (d > safetyDistance) {
             robotCurrentAngle = imu.getAngularOrientation().firstAngle;
             if (robotCurrentAngle - robotStartingAngle >= 93) { // 3 degrees or more
                 fl.setPower(-0.3);
                 fr.setPower(0.3);
                 bl.setPower(0.5);
                 br.setPower(-0.5);
-            }
-            else if (robotCurrentAngle - robotStartingAngle <= 87) { // -3 degrees or more
+            } else if (robotCurrentAngle - robotStartingAngle <= 87) { // -3 degrees or more
                 fl.setPower(-0.5);
                 fr.setPower(0.5);
                 bl.setPower(0.3);
                 br.setPower(-0.3);
-            }
-            else {
+            } else {
                 fl.setPower(-0.3);
                 fr.setPower(0.3);
                 bl.setPower(0.3);
@@ -285,7 +279,7 @@ public abstract class AutoBase extends LinearOpMode {
         return driveDistance;
     }
 
-    public void StopAll(){
+    public void StopAll() {
         fl.setPower(0);
         fr.setPower(0);
         bl.setPower(0);
@@ -294,7 +288,7 @@ public abstract class AutoBase extends LinearOpMode {
 
     public void Strafe(float power, float distance, Direction d /*, OpMode op*/) {
 
-        float x = (2.0f*PPR * distance)/(4F * (float)Math.PI); // used to be a 2 at top. tried 1.5, seems ok
+        float x = (2.0f * PPR * distance) / (4F * (float) Math.PI); // used to be a 2 at top. tried 1.5, seems ok
         int targetEncoderValue = Math.round(x);
 
         float actualPower = power;
@@ -318,17 +312,17 @@ public abstract class AutoBase extends LinearOpMode {
 
             float flPower, frPower, blPower, brPower;
 
-            flPower = actualPower * 1.2F - 0.1f*power; //0.05F; when strafe to left, actual power is negative, but power remains positive.
-            frPower = -actualPower * 1.2F - 0.1f*power; //0.05F;
-            blPower = -actualPower * 1F - 0.1f*power; //0.05F;
-            brPower = actualPower * 1F - 0.1f*power; //0.05F;
+            flPower = actualPower * 1.2F - 0.1f * power; //0.05F; when strafe to left, actual power is negative, but power remains positive.
+            frPower = -actualPower * 1.2F - 0.1f * power; //0.05F;
+            blPower = -actualPower * 1F - 0.1f * power; //0.05F;
+            brPower = actualPower * 1F - 0.1f * power; //0.05F;
 
             float max = Max(flPower, frPower, blPower, brPower);
 
-            fl.setPower(flPower/max);
-            fr.setPower(frPower/max);
-            bl.setPower(blPower/max);
-            br.setPower(brPower/max);
+            fl.setPower(flPower / max);
+            fr.setPower(frPower / max);
+            bl.setPower(blPower / max);
+            br.setPower(brPower / max);
         }
 
         StopAll();
@@ -336,7 +330,7 @@ public abstract class AutoBase extends LinearOpMode {
 
     public void Drive(float power, float distance, Direction d) {
 
-        float x = (PPR * distance)/(4F * (float)Math.PI);
+        float x = (PPR * distance) / (4F * (float) Math.PI);
         int targetEncoderValue = Math.round(x);
 
 
@@ -377,7 +371,7 @@ public abstract class AutoBase extends LinearOpMode {
             targetAngle = startOrientation.firstAngle - angle;
             currentAngle = startOrientation.firstAngle;
 
-            while ((currentAngle - stoppingAngle) > targetAngle  && opMode.opModeIsActive()) {
+            while ((currentAngle - stoppingAngle) > targetAngle && opMode.opModeIsActive()) {
 
                 opMode.telemetry.addData("start:", startOrientation.firstAngle);
                 opMode.telemetry.addData("current:", currentAngle);
@@ -385,9 +379,9 @@ public abstract class AutoBase extends LinearOpMode {
                 opMode.telemetry.update();
 
                 currentAngle = imu.getAngularOrientation().firstAngle;
-                AngularVelocity v =  imu.getAngularVelocity();
+                AngularVelocity v = imu.getAngularVelocity();
                 float speed = Math.abs(v.xRotationRate);
-                stoppingAngle = Math.abs(( 0.2648f * speed) - 7f);
+                stoppingAngle = Math.abs((0.2648f * speed) - 7f);
                 Log.i("[phoenix:turnTest]", String.format("StartingAngle=%f, CurrentAngle=%f, AngularVelocity=%f, StoppingAngle=%f", startOrientation.firstAngle, currentAngle, speed, stoppingAngle));
 
                 fl.setPower(-(actualPower));
@@ -395,13 +389,12 @@ public abstract class AutoBase extends LinearOpMode {
                 bl.setPower(-(actualPower));
                 br.setPower(actualPower);
             }
-        }
-        else {
+        } else {
             actualPower = power;
 
             targetAngle = startOrientation.firstAngle + angle;
             currentAngle = startOrientation.firstAngle;
-            while ((currentAngle + stoppingAngle) < targetAngle  && opMode.opModeIsActive()) {
+            while ((currentAngle + stoppingAngle) < targetAngle && opMode.opModeIsActive()) {
 
                 opMode.telemetry.addData("start:", startOrientation.firstAngle);
                 opMode.telemetry.addData("current:", currentAngle);
@@ -409,9 +402,9 @@ public abstract class AutoBase extends LinearOpMode {
                 opMode.telemetry.update();
 
                 currentAngle = imu.getAngularOrientation().firstAngle;
-                AngularVelocity v =  imu.getAngularVelocity();
+                AngularVelocity v = imu.getAngularVelocity();
                 float speed = Math.abs(v.xRotationRate);
-                stoppingAngle = Math.abs(( 0.2648f * speed) - 7f); //-8.5609
+                stoppingAngle = Math.abs((0.2648f * speed) - 7f); //-8.5609
 
                 fl.setPower(-(actualPower));
                 fr.setPower(actualPower);
@@ -421,6 +414,7 @@ public abstract class AutoBase extends LinearOpMode {
         }
         StopAll();
     }
+
     public void StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance) {
         VuforiaTrackableDefaultListener imageListener = (VuforiaTrackableDefaultListener) imageTarget.getListener();
 
@@ -494,8 +488,7 @@ public abstract class AutoBase extends LinearOpMode {
                 Log.i("[phoenix:StrafeToImage]", String.format("adj x=%f, y=%f, z=%f, flTurnAdjust=%f, blTurnAdjust=%f", adjustedOrientation.firstAngle, adjustedOrientation.secondAngle, adjustedOrientation.thirdAngle, flTurnAdjust, blTurnAdjust));
                 opMode.telemetry.update();
             }
-        }
-        else {
+        } else {
             this.Strafe(.4F, safetyDistance, Direction.RIGHT);
             StopAll();
             return;
@@ -508,5 +501,96 @@ public abstract class AutoBase extends LinearOpMode {
         opMode.telemetry.update();
     }
 
+    public OpenGLMatrix GetRobotLocation() {
+        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables.addAll(targetsSkyStone);
+        OpenGLMatrix lastLocation = null;
+
+        while (opModeIsActive()) {
+
+            for (VuforiaTrackable trackable : allTrackables) {
+                if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+
+                    OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
+                            .translation(142 / 2, 0, 0)
+                            .multiplied(Orientation.getRotationMatrix(
+                                    AxesReference.EXTRINSIC, AxesOrder.YZY,
+                                    AngleUnit.DEGREES, -90, 0, 0));
+
+                    ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(phoneLocationOnRobot, VuforiaLocalizer.CameraDirection.BACK);
+
+                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getRobotLocation();
+
+                    if (robotLocationTransform != null) {
+                        telemetry.addData("Phoenix XY: ", robotLocationTransform.getColumn(3).get(0) / 25.4f + " " + robotLocationTransform.getColumn(3).get(1) / 25.4f);
+
+                        return robotLocationTransform;
+                    }
+                }
+
+            }
+
+            telemetry.update();
+        }
+        return null;
+    }
+
+    public void DriveToMatrix(float x, float y) {
+        double frPower = 0;
+        double flPower = 0;
+        double brPower = 0;
+        double blPower = 0;
+
+        float yDiff = 51;
+        float xDiff = 31;
+
+        while (yDiff < - 50 || Math.abs(xDiff) > 30)
+            {
+            OpenGLMatrix robotLocation = GetRobotLocation();
+
+            if (robotLocation != null)
+            {
+                yDiff = y - robotLocation.getColumn(3).get(1);
+                xDiff = x - robotLocation.getColumn(3).get(0);
+
+                Log.i("yDiff & xDiff", String.format("yDiff=%10.2f xDiff=%10.2f", yDiff, xDiff));
+
+                if (Math.abs(yDiff) > 50)
+                {
+                    frPower = 0.3;
+                    flPower = 0.3;
+                    brPower = 0.3;
+                    blPower = 0.3;
+                }
+
+                if (Math.abs(xDiff) > 30)
+                {
+                    double strafeAdjustmentPower = 0;
+
+                    if (x - robotLocation.getColumn(3).get(0) > 0)
+                        strafeAdjustmentPower = 0.3;
+                    else
+                        strafeAdjustmentPower = -0.3;
+
+                    frPower = frPower + strafeAdjustmentPower;
+                    flPower = flPower - strafeAdjustmentPower;
+                    brPower = brPower - strafeAdjustmentPower;
+                    blPower = blPower + strafeAdjustmentPower;
+                }
+            }
+
+            fl.setPower(flPower);
+            fr.setPower(frPower);
+            bl.setPower(blPower);
+            br.setPower(brPower);
+
+
+        }
+
+        fl.setPower(0);
+        fr.setPower(0);
+        bl.setPower(0);
+        br.setPower(0);
+    }
 }
 
