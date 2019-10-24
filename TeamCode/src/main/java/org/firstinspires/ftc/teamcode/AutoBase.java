@@ -515,7 +515,7 @@ public abstract class AutoBase extends LinearOpMode {
                             .translation(142 / 2, 0, 0)
                             .multiplied(Orientation.getRotationMatrix(
                                     AxesReference.EXTRINSIC, AxesOrder.YZY,
-                                    AngleUnit.DEGREES, -90, 0, 0));
+                                    AngleUnit.DEGREES, 180, 0, 0));
 
                     ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(phoneLocationOnRobot, VuforiaLocalizer.CameraDirection.BACK);
 
@@ -553,8 +553,8 @@ public abstract class AutoBase extends LinearOpMode {
                 yDiff = y - robotLocation.getColumn(3).get(1);
                 xDiff = x - robotLocation.getColumn(3).get(0);
 
-                Log.i("yDiff & xDiff", String.format("yDiff=%10.2f xDiff=%10.2f", yDiff, xDiff));
-
+                Log.i("xydiff & xylocation", String.format("yDiff=%10.2f xDiff=%10.2f currentY=%10.2f currentX=%10.2f", yDiff/25.4, xDiff/25.4, robotLocation.getColumn(3).get(1)/25.4, robotLocation.getColumn(3).get(0)/25.4));
+                Log.i("[phoenix]",  String.format("translateX = %10.2f, translateY = %10.2f", robotLocation.getTranslation().get(0), robotLocation.getTranslation().get(1)));
                 if (Math.abs(yDiff) > 50)
                 {
                     frPower = 0.3;
@@ -568,22 +568,28 @@ public abstract class AutoBase extends LinearOpMode {
                     double strafeAdjustmentPower = 0;
 
                     if (x - robotLocation.getColumn(3).get(0) > 0)
-                        strafeAdjustmentPower = 0.3;
-                    else
                         strafeAdjustmentPower = -0.3;
+                    else
+                        strafeAdjustmentPower = 0.3;
 
                     frPower = frPower + strafeAdjustmentPower;
                     flPower = flPower - strafeAdjustmentPower;
                     brPower = brPower - strafeAdjustmentPower;
                     blPower = blPower + strafeAdjustmentPower;
                 }
+
+                fl.setPower(flPower);
+                fr.setPower(frPower);
+                bl.setPower(blPower);
+                br.setPower(brPower);
             }
 
-            fl.setPower(flPower);
-            fr.setPower(frPower);
-            bl.setPower(blPower);
-            br.setPower(brPower);
-
+            else {
+                fl.setPower(0);
+                fr.setPower(0);
+                bl.setPower(0);
+                br.setPower(0);
+            }
 
         }
 
