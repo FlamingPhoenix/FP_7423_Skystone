@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.service.dreams.DreamService;
 import android.util.Log;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -13,6 +14,7 @@ import com.vuforia.HINT;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -26,6 +28,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.Direction;
+import org.firstinspires.ftc.teamcode.Library.ImageNavigation;
 import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
 import org.firstinspires.ftc.teamcode.MyClass.PositionToImage;
 import org.firstinspires.ftc.teamcode.MyClass.SkystonePosition;
@@ -47,50 +50,17 @@ public abstract class AutoBase extends LinearOpMode {
     public Servo twister;
     public DistanceSensor stoneScanner;
 
-    public VuforiaTrackable stoneTarget;
-    public VuforiaTrackable redRearBridge;
-    public VuforiaTrackable blueRearBridge;
-    public VuforiaTrackable redFrontBridge;
-    public VuforiaTrackable blueFrontBridge;
-    public VuforiaTrackable red1;
-    public VuforiaTrackable red2;
-    public VuforiaTrackable front1;
-    public VuforiaTrackable front2;
-    public VuforiaTrackable blue1;
-    public VuforiaTrackable blue2;
-    public VuforiaTrackable rear1;
-    public VuforiaTrackable rear2;
-
-    public VuforiaLocalizer vuforia;
-
     public DistanceSensor distanceSensor;
 
     public float PPR = 1120F;  // 560 for new robot 1120 for old robot
     protected LinearOpMode op;
 
     public MyBoschIMU imu;
-    VuforiaTrackables targetsSkyStone;
 
-    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
-    // We will define some constants and conversions here
-    private static final float mmPerInch = 25.4f;
-    private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
-
-    // Constant for Stone Target
-    private static final float stoneZ = 2.00f * mmPerInch;
-
-    // Constants for the center support targets
-    private static final float bridgeZ = 6.42f * mmPerInch;
-    private static final float bridgeY = 23 * mmPerInch;
-    private static final float bridgeX = 5.18f * mmPerInch;
-    private static final float bridgeRotY = 59;                                 // Units are degrees
-    private static final float bridgeRotZ = 180;
-
-    // Constants for perimeter targets
-    private static final float halfField = 72 * mmPerInch;
-    private static final float quadField = 36 * mmPerInch;
 
     protected PositionToImage lastKnownPosition;
+
+    ImageNavigation imageNavigation;
 
     public void initialize() {
         lastKnownPosition = new PositionToImage(); //instantiate this first
@@ -102,99 +72,10 @@ public abstract class AutoBase extends LinearOpMode {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        com.vuforia.Vuforia VU = new com.vuforia.Vuforia();
+        imageNavigation = new ImageNavigation(hardwareMap, this);
 
-        MyBoschIMU imu = new MyBoschIMU(hardwareMap);
-
+        imu = new MyBoschIMU(hardwareMap);
         imu.initialize(new BNO055IMU.Parameters());
-
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters param = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-        com.vuforia.Vuforia.setInitParameters(null, 3, "");
-        CameraDevice.getInstance().setField("iso", "100");
-        param.vuforiaLicenseKey = "AbYPrgD/////AAAAGbvKMH3NcEVFmPLgunQe4K0d1ZQi+afRLxricyooCq+sgY9Yh1j+bBrd0CdDCcoieA6trLCKBzymC515+Ps/FECtXv3+CTW6fg3/3+nvKZ6QA18h/cNZHg5HYHmghlcCgVUmSzOLRvdOpbS4S+0Y/sWGXwFK0PbuGPSN82w8XPDBoRYSWjAf8GXeitmNSlm9n4swrMoYNpMDuWCDjSm1kWnoErjFA9NuNoFzAgO+C/rYzoYjTJRk40ETVcAsahzatRlP7PJCvNNXiBhE6iVR+x7lFlTZ841xifOIOPkfVc54olC5XYe4A5ZmQ6WFD03W5HHdQrnmKPmkgcr1yqXAJ3rLTK8FZK3KVgbxz3Eeqps0";
-        //param.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        param.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        com.vuforia.Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS, 13);
-
-        vuforia = ClassFactory.getInstance().createVuforia(param);
-
-        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
-        targetsSkyStone.activate();
-
-        redRearBridge = targetsSkyStone.get(1);
-        redRearBridge.setName("redRearBridge");
-        blueRearBridge = targetsSkyStone.get(2);
-        blueRearBridge.setName("blueRearBridge");
-        redFrontBridge = targetsSkyStone.get(3);
-        redFrontBridge.setName("redFrontBridge");
-        blueFrontBridge = targetsSkyStone.get(4);
-        blueFrontBridge.setName("blueFrontBridge");
-        red1 = targetsSkyStone.get(5);
-        red1.setName("red1");
-        red2 = targetsSkyStone.get(6);
-        red2.setName("red2");
-        front1 = targetsSkyStone.get(7);
-        front1.setName("front1");
-        front2 = targetsSkyStone.get(8);
-        front2.setName("front2");
-        blue1 = targetsSkyStone.get(9);
-        blue1.setName("blue1");
-        blue2 = targetsSkyStone.get(10);
-        blue2.setName("blue2");
-        rear1 = targetsSkyStone.get(11);
-        rear1.setName("rear1");
-        rear2 = targetsSkyStone.get(12);
-        rear2.setName("rear2");
-
-        blueFrontBridge.setLocation(OpenGLMatrix
-                .translation(-bridgeX, bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
-
-        blueRearBridge.setLocation(OpenGLMatrix
-                .translation(-bridgeX, bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, bridgeRotZ)));
-
-        redFrontBridge.setLocation(OpenGLMatrix
-                .translation(-bridgeX, -bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, 0)));
-
-        redRearBridge.setLocation(OpenGLMatrix
-                .translation(bridgeX, -bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, 0)));
-
-        //Set the position of the perimeter targets with relation to origin (center of field)
-        red1.setLocation(OpenGLMatrix
-                .translation(quadField, -halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-
-        red2.setLocation(OpenGLMatrix
-                .translation(-quadField, -halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-
-        front1.setLocation(OpenGLMatrix
-                .translation(-halfField, -quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-
-        front2.setLocation(OpenGLMatrix
-                .translation(-halfField, quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-
-        blue1.setLocation(OpenGLMatrix
-                .translation(-quadField, halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-
-        blue2.setLocation(OpenGLMatrix
-                .translation(quadField, halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-
-        rear1.setLocation(OpenGLMatrix
-                .translation(halfField, quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-
-        rear2.setLocation(OpenGLMatrix
-                .translation(halfField, -quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
     }
@@ -217,7 +98,7 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     public float aquireStoneTarget() {
-        VuforiaTrackableDefaultListener imageListener = (VuforiaTrackableDefaultListener) stoneTarget.getListener();
+        VuforiaTrackableDefaultListener imageListener = (VuforiaTrackableDefaultListener) imageNavigation.stoneTarget.getListener();
 
 
         if (imageListener.isVisible()) {
@@ -288,6 +169,10 @@ public abstract class AutoBase extends LinearOpMode {
 
     public void Strafe(float power, float distance, Direction d /*, OpMode op*/) {
 
+        imu.resetAndStart(Direction.COUNTERCLOCKWISE);
+
+        int robotStartingAngle = (int)imu.getAngularOrientation().firstAngle;
+
         float x = (2.0f * PPR * distance) / (4F * (float) Math.PI); // used to be a 2 at top. tried 1.5, seems ok
         int targetEncoderValue = Math.round(x);
 
@@ -298,9 +183,9 @@ public abstract class AutoBase extends LinearOpMode {
         int initialPosition = fl.getCurrentPosition();
         int positionDiff = 0;
 
-        while (positionDiff < targetEncoderValue && op.opModeIsActive()) {
-            /*
-            op.telemetry.addData("current:", currentPosition);
+        while (positionDiff < targetEncoderValue && this.opModeIsActive()) {
+
+            /* op.telemetry.addData("current:", currentPosition);
             op.telemetry.addData("target:", targetEncoderValue);
             op.telemetry.update();
             */
@@ -312,10 +197,59 @@ public abstract class AutoBase extends LinearOpMode {
 
             float flPower, frPower, blPower, brPower;
 
-            flPower = actualPower * 1.2F - 0.1f * power; //0.05F; when strafe to left, actual power is negative, but power remains positive.
-            frPower = -actualPower * 1.2F - 0.1f * power; //0.05F;
-            blPower = -actualPower * 1F - 0.1f * power; //0.05F;
-            brPower = actualPower * 1F - 0.1f * power; //0.05F;
+            float robotCurrentAngle = imu.getAngularOrientation().firstAngle;
+
+            float angleModify = power * 0.5f;
+
+            if (d == Direction.LEFT)
+            {
+                if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
+                {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower - angleModify;
+                    brPower = actualPower + angleModify;
+                } else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                {
+                    flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower - angleModify;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                } else {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                }
+            }
+            else if(d == Direction.RIGHT)
+            {
+                if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
+                {
+                    flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower - angleModify;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                } else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower - angleModify;
+                    brPower = actualPower + angleModify;
+                } else {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                }
+            }
+            else
+            {
+                flPower = 0;
+                frPower = 0;
+                blPower = 0;
+                brPower = 0;
+            }
 
             float max = Max(flPower, frPower, blPower, brPower);
 
@@ -323,6 +257,7 @@ public abstract class AutoBase extends LinearOpMode {
             fr.setPower(frPower / max);
             bl.setPower(blPower / max);
             br.setPower(brPower / max);
+
         }
 
         StopAll();
@@ -415,6 +350,8 @@ public abstract class AutoBase extends LinearOpMode {
         StopAll();
     }
 
+
+
     public void StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance) {
         VuforiaTrackableDefaultListener imageListener = (VuforiaTrackableDefaultListener) imageTarget.getListener();
 
@@ -501,39 +438,7 @@ public abstract class AutoBase extends LinearOpMode {
         opMode.telemetry.update();
     }
 
-    public OpenGLMatrix GetRobotLocation() {
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(targetsSkyStone);
-        OpenGLMatrix lastLocation = null;
 
-        while (opModeIsActive()) {
-
-            for (VuforiaTrackable trackable : allTrackables) {
-                if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-
-                    OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
-                            .translation(142 / 2, 0, 0)
-                            .multiplied(Orientation.getRotationMatrix(
-                                    AxesReference.EXTRINSIC, AxesOrder.YZY,
-                                    AngleUnit.DEGREES, 180, 0, 0));
-
-                    ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(phoneLocationOnRobot, VuforiaLocalizer.CameraDirection.BACK);
-
-                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getRobotLocation();
-
-                    if (robotLocationTransform != null) {
-                        telemetry.addData("Phoenix XY: ", robotLocationTransform.getColumn(3).get(0) / 25.4f + " " + robotLocationTransform.getColumn(3).get(1) / 25.4f);
-
-                        return robotLocationTransform;
-                    }
-                }
-
-            }
-
-            telemetry.update();
-        }
-        return null;
-    }
 
     public void DriveToMatrix(float x, float y) {
         double frPower = 0;
@@ -546,15 +451,15 @@ public abstract class AutoBase extends LinearOpMode {
 
         while (yDiff < - 50 || Math.abs(xDiff) > 30)
             {
-            OpenGLMatrix robotLocation = GetRobotLocation();
+            OpenGLMatrix robotLocation = imageNavigation.getRobotLocation();
 
             if (robotLocation != null)
             {
                 yDiff = y - robotLocation.getColumn(3).get(1);
                 xDiff = x - robotLocation.getColumn(3).get(0);
 
-                Log.i("xydiff & xylocation", String.format("yDiff=%10.2f xDiff=%10.2f currentY=%10.2f currentX=%10.2f", yDiff/25.4, xDiff/25.4, robotLocation.getColumn(3).get(1)/25.4, robotLocation.getColumn(3).get(0)/25.4));
-                Log.i("[phoenix]",  String.format("translateX = %10.2f, translateY = %10.2f", robotLocation.getTranslation().get(0), robotLocation.getTranslation().get(1)));
+                //Log.i("xydiff & xylocation", String.format("yDiff=%10.2f xDiff=%10.2f currentY=%10.2f currentX=%10.2f", yDiff/25.4, xDiff/25.4, robotLocation.getColumn(3).get(1)/25.4, robotLocation.getColumn(3).get(0)/25.4));
+                Log.i("[phoenix]",  String.format("translateX = %10.2f, translateY = %10.2f, translateZ = %10.2f", robotLocation.getTranslation().get(0)/25.4, robotLocation.getTranslation().get(1)/25.4, robotLocation.getTranslation().get(2)/25.4));
                 if (Math.abs(yDiff) > 50)
                 {
                     frPower = 0.3;
