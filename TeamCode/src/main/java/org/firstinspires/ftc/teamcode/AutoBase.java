@@ -52,7 +52,7 @@ public abstract class AutoBase extends LinearOpMode {
 
     public DistanceSensor distanceSensor;
 
-    public float PPR = 1120F;  // 560 for new robot 1120 for old robot
+    public float PPR = 1440F; //changed ppr for test robot
     protected LinearOpMode op;
 
     public MyBoschIMU imu;
@@ -180,7 +180,7 @@ public abstract class AutoBase extends LinearOpMode {
         if (d == Direction.LEFT)
             actualPower = -(power);
 
-        int initialPosition = fl.getCurrentPosition();
+        int initialPosition = br.getCurrentPosition();
         int positionDiff = 0;
 
         while (positionDiff < targetEncoderValue && this.opModeIsActive()) {
@@ -189,7 +189,9 @@ public abstract class AutoBase extends LinearOpMode {
             op.telemetry.addData("target:", targetEncoderValue);
             op.telemetry.update();
             */
-            positionDiff = Math.abs(fl.getCurrentPosition() - initialPosition);
+            int currentPosition = br.getCurrentPosition();
+            Log.i("[phoenix]", String.format("Current:%10d Initial:%10d", currentPosition, initialPosition));
+            positionDiff = Math.abs(currentPosition - initialPosition); //changed encoder for test bot
             //Log.i("[Phoenix]:encoder #", Integer.toString(positionDiff));
 
             //if(currentPosition < 200)
@@ -209,13 +211,16 @@ public abstract class AutoBase extends LinearOpMode {
                     frPower = -actualPower;
                     blPower = -actualPower - angleModify;
                     brPower = actualPower + angleModify;
-                } else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                }
+                else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
                 {
                     flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
                     frPower = -actualPower - angleModify;
                     blPower = -actualPower;
                     brPower = actualPower;
-                } else {
+                }
+                else
+                {
                     flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
                     frPower = -actualPower;
                     blPower = -actualPower;
@@ -230,13 +235,16 @@ public abstract class AutoBase extends LinearOpMode {
                     frPower = -actualPower - angleModify;
                     blPower = -actualPower;
                     brPower = actualPower;
-                } else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                }
+                else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
                 {
                     flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
                     frPower = -actualPower;
                     blPower = -actualPower - angleModify;
                     brPower = actualPower + angleModify;
-                } else {
+                }
+                else
+                {
                     flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
                     frPower = -actualPower;
                     blPower = -actualPower;
