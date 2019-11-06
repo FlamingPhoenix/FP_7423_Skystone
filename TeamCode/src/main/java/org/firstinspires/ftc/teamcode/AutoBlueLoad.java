@@ -17,6 +17,14 @@ public class AutoBlueLoad extends AutoBase {
 
         waitForStart();
 
+        Strafe(0.2F, 4, Direction.RIGHT);
+        this.sleep(2000);
+        StrafeToImage(0.1F, imageNavigation.stoneTarget, this, 0, 11);
+        Turn(0.5F, 90, Direction.CLOCKWISE, imu, this);
+        Drive(0.2F, 1, Direction.BACKWARD);
+        Turn(0.5F, 90, Direction.COUNTERCLOCKWISE, imu, this);
+        Drive(0.5F, 60, Direction.FORWARD);
+
 //        while(opModeIsActive())
 //        {
 //            OpenGLMatrix robotLocation = imageNavigation.getRobotLocation();
@@ -24,38 +32,38 @@ public class AutoBlueLoad extends AutoBase {
 //        }
 
 
-        Strafe(0.3F, 6, Direction.RIGHT);
-
-
-        OpenGLMatrix p = imageNavigation.getRobotLocation();
-        double skystoneX = p.getTranslation().get(0)/25.4;
-        Skystone skystonePos;
-
-        if(skystoneX > -4) {
-            skystonePos = Skystone.LEFT;
-        }
-
-        else if (skystoneX < -4) {
-            skystonePos = Skystone.CENTER;
-        }
-
-        else {
-            skystonePos = Skystone.RIGHT;
-        }
-
-        Turn(0.5f, 90, Direction.CLOCKWISE, imu, this);
-        if(skystonePos == Skystone.LEFT) {
-            DriveToMatrix(-28F * 25.4F, 24F * 25.4F);
-
-        }
-
-        else if(skystonePos == Skystone.CENTER) {
-            DriveToMatrix(-36F * 25.4F, 24F * 25.4F);
-
-        }
-
-        else {
-            DriveToMatrix(-44F * 25.4F, 24F * 25.4F);
-        }
+//        Strafe(0.3F, 6, Direction.RIGHT);
+//
+//
+//        OpenGLMatrix p = imageNavigation.getRobotLocation();
+//        double skystoneX = p.getTranslation().get(0)/25.4;
+//        Skystone skystonePos;
+//
+//        if(skystoneX > -4) {
+//            skystonePos = Skystone.LEFT;
+//        }
+//
+//        else if (skystoneX < -4) {
+//            skystonePos = Skystone.CENTER;
+//        }
+//
+//        else {
+//            skystonePos = Skystone.RIGHT;
+//        }
+//
+//        Turn(0.5f, 90, Direction.CLOCKWISE, imu, this);
+//        if(skystonePos == Skystone.LEFT) {
+//            DriveToCoordinate(-28F * 25.4F, 24F * 25.4F);
+//
+//        }
+//
+//        else if(skystonePos == Skystone.CENTER) {
+//            DriveToCoordinate(-36F * 25.4F, 24F * 25.4F);
+//
+//        }
+//
+//        else {
+//            DriveToCoordinate(-44F * 25.4F, 24F * 25.4F);
+//        }
     }
 }

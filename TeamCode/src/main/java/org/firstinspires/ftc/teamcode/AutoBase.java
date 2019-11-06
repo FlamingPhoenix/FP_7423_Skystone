@@ -53,8 +53,6 @@ public abstract class AutoBase extends LinearOpMode {
     public DistanceSensor distanceSensor;
 
     public float PPR = 1440F; //changed ppr for test robot
-    protected LinearOpMode op;
-
     public MyBoschIMU imu;
 
 
@@ -201,7 +199,7 @@ public abstract class AutoBase extends LinearOpMode {
 
             float robotCurrentAngle = imu.getAngularOrientation().firstAngle;
 
-            float angleModify = power * 0.5f;
+            float angleModify = power;
 
             if (d == Direction.LEFT)
             {
@@ -287,9 +285,9 @@ public abstract class AutoBase extends LinearOpMode {
             power = -1 * power;
         }
 
-        while (currentPosition < targetEncoderValue && op.opModeIsActive()) {
+        while (currentPosition < targetEncoderValue && opModeIsActive()) {
 
-            currentPosition = (Math.abs(fl.getCurrentPosition()));
+            currentPosition = (Math.abs(br.getCurrentPosition()));
             //Log.i("[Phoenix]:encoder #", Integer.toString(currentPosition));
             fl.setPower(power);
             fr.setPower(power);
@@ -360,7 +358,10 @@ public abstract class AutoBase extends LinearOpMode {
 
 
 
-    public void StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance) {
+    public void StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance, double stopDistance) {
+
+        stopDistance = stopDistance * 25.4;
+
         VuforiaTrackableDefaultListener imageListener = (VuforiaTrackableDefaultListener) imageTarget.getListener();
 
         float actualPower = power;
@@ -371,9 +372,17 @@ public abstract class AutoBase extends LinearOpMode {
             float x = pos.getColumn(3).get(1);
             float additionalpower = 0;
 
+            lastKnownPosition.translation = pos.getTranslation();
 
-            while ((Math.abs(d) >= 200) && (imageListener.isVisible()) && opMode.opModeIsActive()) {
+            Log.i("[phoenix]", String.format("distanceImage (before loop) = %10.2f", d));
+
+            while ((Math.abs(d) >= stopDistance) && (imageListener.isVisible()) && opMode.opModeIsActive()) {
+
                 pos = ((VuforiaTrackableDefaultListener) imageTarget.getListener()).getPose();
+                d = pos.getColumn(3).get(2); //distance to the image in millimeter;
+                x = pos.getColumn(3).get(1);
+
+                Log.i("[phoenix]", String.format("distanceImage = %10.2f", d));
 
                 Orientation orientation = Orientation.getOrientation(pos, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
 
@@ -439,26 +448,25 @@ public abstract class AutoBase extends LinearOpMode {
             return;
         }
         StopAll();
-        float remainDistance = (Math.abs(lastKnownPosition.translation.get(2)) - 100) * .0254F;
-        opMode.telemetry.addData("Remaining Distance: ", "x = %f", remainDistance);
-        if (remainDistance > 4F)
-            this.Strafe(0.5F, remainDistance, Direction.RIGHT);
         opMode.telemetry.update();
     }
 
-
-
-    public void DriveToMatrix(float x, float y) {
+    public void DriveToCoordinate(float x, float y) {
         double frPower = 0;
         double flPower = 0;
         double brPower = 0;
         double blPower = 0;
 
-        float yDiff = 51;
-        float xDiff = 31;
+        float yDiff = -1000;
+        float xDiff = 1000;
 
-        while (yDiff < - 50 || Math.abs(xDiff) > 30)
-            {
+        while (yDiff < - 100 || Math.abs(xDiff) > 100)
+        {
+            frPower = 0;
+            flPower = 0;
+            brPower = 0;
+            blPower = 0;
+
             OpenGLMatrix robotLocation = imageNavigation.getRobotLocation();
 
             if (robotLocation != null)
@@ -468,7 +476,7 @@ public abstract class AutoBase extends LinearOpMode {
 
                 //Log.i("xydiff & xylocation", String.format("yDiff=%10.2f xDiff=%10.2f currentY=%10.2f currentX=%10.2f", yDiff/25.4, xDiff/25.4, robotLocation.getColumn(3).get(1)/25.4, robotLocation.getColumn(3).get(0)/25.4));
                 Log.i("[phoenix]",  String.format("translateX = %10.2f, translateY = %10.2f, translateZ = %10.2f", robotLocation.getTranslation().get(0)/25.4, robotLocation.getTranslation().get(1)/25.4, robotLocation.getTranslation().get(2)/25.4));
-                if (Math.abs(yDiff) > 50)
+                if (yDiff < -100)
                 {
                     frPower = 0.3;
                     flPower = 0.3;
@@ -476,11 +484,11 @@ public abstract class AutoBase extends LinearOpMode {
                     blPower = 0.3;
                 }
 
-                if (Math.abs(xDiff) > 30)
+                if (Math.abs(xDiff) > 100)
                 {
                     double strafeAdjustmentPower = 0;
 
-                    if (x - robotLocation.getColumn(3).get(0) > 0)
+                    if (xDiff > 0)
                         strafeAdjustmentPower = -0.3;
                     else
                         strafeAdjustmentPower = 0.3;
