@@ -23,7 +23,7 @@ public class MyTele extends OpMode {
     float x1, x2, y1, y2;
     DcMotor intakeMotorLeft;
     DcMotor intakeMotorRight;
-    //Servo puller;
+    Servo puller;
 
 
     public void drive(float x1, float y1, float x2) {
@@ -60,14 +60,12 @@ public class MyTele extends OpMode {
 
         intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        /*
         puller = hardwareMap.servo.get("puller");
         ServoControllerEx pullerController = (ServoControllerEx) puller.getController();
         int pullerServoPort = puller.getPortNumber();
         PwmControl.PwmRange pullerPwmRange = new PwmControl.PwmRange(700, 2300);
         pullerController.setServoPwmRange(pullerServoPort, pullerPwmRange);
-        puller.setPosition(0.95);
-        */
+        puller.setPosition(0);
 
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
