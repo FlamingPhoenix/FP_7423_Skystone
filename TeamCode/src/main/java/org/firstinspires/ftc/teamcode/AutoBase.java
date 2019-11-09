@@ -50,10 +50,14 @@ public abstract class AutoBase extends LinearOpMode {
     public Servo twister;
     public DistanceSensor stoneScanner;
 
-    public DistanceSensor distanceSensor;
+    //public DistanceSensor distanceSensor;
 
-    public float PPR = 1440F; //changed ppr for test robot
+    public float PPR = 1120F; //changed ppr for test robot
+    public float diameter = 3F;
     public MyBoschIMU imu;
+
+    DcMotor intakeMotorLeft;
+    DcMotor intakeMotorRight;
 
 
     protected PositionToImage lastKnownPosition;
@@ -75,7 +79,17 @@ public abstract class AutoBase extends LinearOpMode {
         imu = new MyBoschIMU(hardwareMap);
         imu.initialize(new BNO055IMU.Parameters());
 
-        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
+       // distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
+
+        intakeMotorLeft = hardwareMap.dcMotor.get("intaketh1");
+        intakeMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakeMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        intakeMotorRight = hardwareMap.dcMotor.get("intaketh2");
+        intakeMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakeMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     private float Max(float x1, float x2, float x3, float x4) {
@@ -116,47 +130,47 @@ public abstract class AutoBase extends LinearOpMode {
 
     //used to test the rotating stone distance sensor
 
-    public double getObstacleDistance() {
-        double d = distanceSensor.getDistance(DistanceUnit.INCH);
-        telemetry.addData("Obstacle Distance: ", "%f", d);
-        return d;
-    }
-
-    public double DriveUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
-        float robotCurrentAngle;
-        double d = distanceSensor.getDistance(DistanceUnit.INCH);
-
-        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
-        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        while (d > safetyDistance) {
-            robotCurrentAngle = imu.getAngularOrientation().firstAngle;
-            if (robotCurrentAngle - robotStartingAngle >= 93) { // 3 degrees or more
-                fl.setPower(-0.3);
-                fr.setPower(0.3);
-                bl.setPower(0.5);
-                br.setPower(-0.5);
-            } else if (robotCurrentAngle - robotStartingAngle <= 87) { // -3 degrees or more
-                fl.setPower(-0.5);
-                fr.setPower(0.5);
-                bl.setPower(0.3);
-                br.setPower(-0.3);
-            } else {
-                fl.setPower(-0.3);
-                fr.setPower(0.3);
-                bl.setPower(0.3);
-                br.setPower(-0.3);
-            }
-
-            d = distanceSensor.getDistance(DistanceUnit.INCH);
-
-            telemetry.addData("Obstacle Distance: ", "%f", d);
-            telemetry.update();
-        }
-        StopAll();
-        double driveDistance = fl.getCurrentPosition();
-        return driveDistance;
-    }
+//    public double getObstacleDistance() {
+//        double d = distanceSensor.getDistance(DistanceUnit.INCH);
+//        telemetry.addData("Obstacle Distance: ", "%f", d);
+//        return d;
+//    }
+//
+//    public double DriveUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
+//        float robotCurrentAngle;
+//        double d = distanceSensor.getDistance(DistanceUnit.INCH);
+//
+//        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
+//        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//
+//        while (d > safetyDistance) {
+//            robotCurrentAngle = imu.getAngularOrientation().firstAngle;
+//            if (robotCurrentAngle - robotStartingAngle >= 93) { // 3 degrees or more
+//                fl.setPower(-0.3);
+//                fr.setPower(0.3);
+//                bl.setPower(0.5);
+//                br.setPower(-0.5);
+//            } else if (robotCurrentAngle - robotStartingAngle <= 87) { // -3 degrees or more
+//                fl.setPower(-0.5);
+//                fr.setPower(0.5);
+//                bl.setPower(0.3);
+//                br.setPower(-0.3);
+//            } else {
+//                fl.setPower(-0.3);
+//                fr.setPower(0.3);
+//                bl.setPower(0.3);
+//                br.setPower(-0.3);
+//            }
+//
+//            d = distanceSensor.getDistance(DistanceUnit.INCH);
+//
+//            telemetry.addData("Obstacle Distance: ", "%f", d);
+//            telemetry.update();
+//        }
+//        StopAll();
+//        double driveDistance = fl.getCurrentPosition();
+//        return driveDistance;
+//    }
 
     public void StopAll() {
         fl.setPower(0);
@@ -171,7 +185,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         int robotStartingAngle = (int)imu.getAngularOrientation().firstAngle;
 
-        float x = (2.0f * PPR * distance) / (4F * (float) Math.PI); // used to be a 2 at top. tried 1.5, seems ok
+        float x = (2.0f * PPR * distance) / (diameter * (float) Math.PI); // used to be a 2 at top. tried 1.5, seems ok
         int targetEncoderValue = Math.round(x);
 
         float actualPower = power;
@@ -271,7 +285,7 @@ public abstract class AutoBase extends LinearOpMode {
 
     public void Drive(float power, float distance, Direction d) {
 
-        float x = (PPR * distance) / (4F * (float) Math.PI);
+        float x = (PPR * distance) / (diameter * (float) Math.PI);
         int targetEncoderValue = Math.round(x);
 
 
@@ -396,7 +410,7 @@ public abstract class AutoBase extends LinearOpMode {
                 lastKnownPosition.orientation = adjustedOrientation;
 
                 d = lastKnownPosition.translation.get(2);
-                x = lastKnownPosition.translation.get(1);
+                x = lastKnownPosition.translation.get(1) * -1; // bc camera rotation change
 
                 opMode.telemetry.addData("x: ", "x = %f", x);
 

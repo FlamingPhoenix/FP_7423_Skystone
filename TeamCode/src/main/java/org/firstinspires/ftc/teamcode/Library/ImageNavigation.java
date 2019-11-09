@@ -179,7 +179,7 @@ public class ImageNavigation
                 .translation(142 / 2, 0, 0)
                 .multiplied(Orientation.getRotationMatrix(
                         AxesReference.EXTRINSIC, AxesOrder.YZY,
-                        AngleUnit.DEGREES, 90, 0, 0));
+                        AngleUnit.DEGREES, -90, 0, 0));
     }
 
     public VectorF getSkyStoneLocation()

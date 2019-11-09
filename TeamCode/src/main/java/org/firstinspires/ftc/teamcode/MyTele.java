@@ -63,7 +63,7 @@ public class MyTele extends OpMode {
         puller = hardwareMap.servo.get("puller");
         ServoControllerEx pullerController = (ServoControllerEx) puller.getController();
         int pullerServoPort = puller.getPortNumber();
-        PwmControl.PwmRange pullerPwmRange = new PwmControl.PwmRange(700, 2300);
+        PwmControl.PwmRange pullerPwmRange = new PwmControl.PwmRange(750, 2200);
         pullerController.setServoPwmRange(pullerServoPort, pullerPwmRange);
         puller.setPosition(0);
 
@@ -93,8 +93,8 @@ public class MyTele extends OpMode {
 
         if (gamepad1.right_trigger > 0.2) //in
         {
-            intakeMotorLeft.setPower(0.3);
-            intakeMotorRight.setPower(0.3);
+            intakeMotorLeft.setPower(1);
+            intakeMotorRight.setPower(1);
         }
         else if (gamepad1.right_bumper) //out
         {
@@ -106,6 +106,11 @@ public class MyTele extends OpMode {
             intakeMotorLeft.setPower(0);
             intakeMotorRight.setPower(0);
         }
+
+        if(gamepad1.left_bumper)
+            puller.setPosition(0);
+        else if(gamepad1.left_trigger >0.2)
+            puller.setPosition(0.9);
     }
 }
 
