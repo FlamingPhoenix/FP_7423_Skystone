@@ -110,7 +110,7 @@ public class MyTele extends OpMode {
         if(gamepad1.left_bumper)
             puller.setPosition(0);
         else if(gamepad1.left_trigger >0.2)
-            puller.setPosition(0.9);
+            puller.setPosition(1);
     }
 }
 

@@ -64,6 +64,8 @@ public abstract class AutoBase extends LinearOpMode {
 
     ImageNavigation imageNavigation;
 
+    public int primaryAngle;
+
     public void initialize() {
         lastKnownPosition = new PositionToImage(); //instantiate this first
 
@@ -90,6 +92,8 @@ public abstract class AutoBase extends LinearOpMode {
         intakeMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        primaryAngle = (int)imu.getAngularOrientation().firstAngle;
     }
 
     private float Max(float x1, float x2, float x3, float x4) {
@@ -289,8 +293,8 @@ public abstract class AutoBase extends LinearOpMode {
         int targetEncoderValue = Math.round(x);
 
 
-        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         int currentPosition = 0;
 
         //added code below to support reverse driving, tested Oct 29, Erik did this
@@ -336,7 +340,7 @@ public abstract class AutoBase extends LinearOpMode {
                 currentAngle = imu.getAngularOrientation().firstAngle;
                 AngularVelocity v = imu.getAngularVelocity();
                 float speed = Math.abs(v.xRotationRate);
-                stoppingAngle = Math.abs((0.2648f * speed) - 7f);
+                stoppingAngle = Math.abs((0.3f * speed) - 7f);
                 Log.i("[phoenix:turnTest]", String.format("StartingAngle=%f, CurrentAngle=%f, AngularVelocity=%f, StoppingAngle=%f", startOrientation.firstAngle, currentAngle, speed, stoppingAngle));
 
                 fl.setPower(-(actualPower));
@@ -372,7 +376,7 @@ public abstract class AutoBase extends LinearOpMode {
 
 
 
-    public void StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance, double stopDistance) {
+    public boolean StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance, double stopDistance, int targetAngle) {
 
         stopDistance = stopDistance * 25.4;
 
@@ -394,7 +398,7 @@ public abstract class AutoBase extends LinearOpMode {
 
                 pos = ((VuforiaTrackableDefaultListener) imageTarget.getListener()).getPose();
                 d = pos.getColumn(3).get(2); //distance to the image in millimeter;
-                x = pos.getColumn(3).get(1);
+                x = -1 * pos.getColumn(3).get(1);
 
                 Log.i("[phoenix]", String.format("distanceImage = %10.2f", d));
 
@@ -428,19 +432,21 @@ public abstract class AutoBase extends LinearOpMode {
 
                 float flTurnAdjust = 0;
                 float blTurnAdjust = 0;
-                float rotationMargin = 3f * Math.abs(d) / 10f;
+                float currentAngle = imu.getAngularOrientation().firstAngle;
+
+                float angleDiff = currentAngle - primaryAngle;
 
 
-                if (adjustedOrientation.firstAngle < -3 && x > -rotationMargin) {
-                    flTurnAdjust = actualPower * 1.25F * (Math.abs(adjustedOrientation.firstAngle) / 40F) * ((1200F - distanceAdjustment) / 1200F);
-                } else if (adjustedOrientation.firstAngle > 3 && x < rotationMargin) {
-                    blTurnAdjust = actualPower * -1.25F * (Math.abs(adjustedOrientation.firstAngle) / 40F) * ((1200F - distanceAdjustment) / 1200F);
+                if (angleDiff < -3) {
+                    flTurnAdjust = actualPower * -1.25F * (Math.abs(adjustedOrientation.firstAngle) / 40F) * ((1200F - distanceAdjustment) / 1200F);
+                } else if (angleDiff > 3) {
+                    blTurnAdjust = actualPower * 1.25F * (Math.abs(adjustedOrientation.firstAngle) / 40F) * ((1200F - distanceAdjustment) / 1200F);
                 }
 
                 float flPower, frPower, blPower, brPower;
 
                 flPower = actualPower + additionalpower + flTurnAdjust;
-                frPower = (-actualPower + additionalpower);
+                frPower = -actualPower + additionalpower;
                 blPower = -actualPower + additionalpower + blTurnAdjust;
                 brPower = actualPower + additionalpower;
 
@@ -450,19 +456,20 @@ public abstract class AutoBase extends LinearOpMode {
                 fr.setPower(frPower / max);
                 bl.setPower(blPower / max);
                 br.setPower(brPower / max);
-
                 Log.i("[phoenix:StrafeToImage]", String.format("x = %f, d = %f, addpower = %f, actpower = %f, distadj = %f", x, d, additionalpower, actualPower, distanceAdjustment));
                 // Log.i("[phoenix:StrafeToImage]", String.format("raw x=%f, y=%f, z=%f", orientation.firstAngle, orientation.secondAngle, orientation.thirdAngle));
                 Log.i("[phoenix:StrafeToImage]", String.format("adj x=%f, y=%f, z=%f, flTurnAdjust=%f, blTurnAdjust=%f", adjustedOrientation.firstAngle, adjustedOrientation.secondAngle, adjustedOrientation.thirdAngle, flTurnAdjust, blTurnAdjust));
                 opMode.telemetry.update();
             }
-        } else {
+        }
+        else {
             this.Strafe(.4F, safetyDistance, Direction.RIGHT);
             StopAll();
-            return;
+            return false;
         }
         StopAll();
         opMode.telemetry.update();
+        return true;
     }
 
     public void DriveToCoordinate(float x, float y) {
