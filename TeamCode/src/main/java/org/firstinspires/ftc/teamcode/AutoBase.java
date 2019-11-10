@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -48,21 +49,20 @@ public abstract class AutoBase extends LinearOpMode {
     public DcMotor br;
 
     public Servo twister;
-    public DistanceSensor stoneScanner;
 
-    //public DistanceSensor distanceSensor;
+    public DistanceSensor distanceSensor;
+    public ColorSensor colorSensor;
 
-    public float PPR = 1120F; //changed ppr for test robot
+    public float PPR = 560F; //changed ppr for test robot
     public float diameter = 3F;
     public MyBoschIMU imu;
 
     DcMotor intakeMotorLeft;
     DcMotor intakeMotorRight;
 
-
     protected PositionToImage lastKnownPosition;
 
-    ImageNavigation imageNavigation;
+    public ImageNavigation imageNavigation;
 
     public int primaryAngle;
 
@@ -81,7 +81,8 @@ public abstract class AutoBase extends LinearOpMode {
         imu = new MyBoschIMU(hardwareMap);
         imu.initialize(new BNO055IMU.Parameters());
 
-       // distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
+        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
 
         intakeMotorLeft = hardwareMap.dcMotor.get("intaketh1");
         intakeMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -132,49 +133,60 @@ public abstract class AutoBase extends LinearOpMode {
         return 0;
     }
 
-    //used to test the rotating stone distance sensor
+    public void StrafeUntilBlack() {
 
-//    public double getObstacleDistance() {
-//        double d = distanceSensor.getDistance(DistanceUnit.INCH);
-//        telemetry.addData("Obstacle Distance: ", "%f", d);
-//        return d;
-//    }
-//
-//    public double DriveUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
-//        float robotCurrentAngle;
-//        double d = distanceSensor.getDistance(DistanceUnit.INCH);
-//
-//        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
-//        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//
-//        while (d > safetyDistance) {
-//            robotCurrentAngle = imu.getAngularOrientation().firstAngle;
-//            if (robotCurrentAngle - robotStartingAngle >= 93) { // 3 degrees or more
-//                fl.setPower(-0.3);
-//                fr.setPower(0.3);
-//                bl.setPower(0.5);
-//                br.setPower(-0.5);
-//            } else if (robotCurrentAngle - robotStartingAngle <= 87) { // -3 degrees or more
-//                fl.setPower(-0.5);
-//                fr.setPower(0.5);
-//                bl.setPower(0.3);
-//                br.setPower(-0.3);
-//            } else {
-//                fl.setPower(-0.3);
-//                fr.setPower(0.3);
-//                bl.setPower(0.3);
-//                br.setPower(-0.3);
-//            }
-//
-//            d = distanceSensor.getDistance(DistanceUnit.INCH);
-//
-//            telemetry.addData("Obstacle Distance: ", "%f", d);
-//            telemetry.update();
-//        }
-//        StopAll();
-//        double driveDistance = fl.getCurrentPosition();
-//        return driveDistance;
-//    }
+    }
+
+    public void color() {
+        colorSensor.enableLed(false);
+        telemetry.addData("Red:", "%d", colorSensor.red());
+        telemetry.addData("Green:", "%d", colorSensor.green());
+        telemetry.addData("Blue:", "%d", colorSensor.blue());
+        telemetry.update();
+    }
+
+
+    public double getObstacleDistance() {
+        double d = distanceSensor.getDistance(DistanceUnit.INCH);
+        telemetry.addData("Obstacle Distance: ", "%f", d);
+        return d;
+    }
+
+    public double StrafeUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
+        float robotCurrentAngle;
+        double d = distanceSensor.getDistance(DistanceUnit.INCH);
+
+        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        while (d > safetyDistance) {
+            robotCurrentAngle = imu.getAngularOrientation().firstAngle;
+            if (robotCurrentAngle - robotStartingAngle >= 3) { // 3 degrees or more
+                fl.setPower(0.5);
+                fr.setPower(-0.5);
+                bl.setPower(-0.3);
+                br.setPower(0.3);
+            } else if (robotCurrentAngle - robotStartingAngle <= -3) { // -3 degrees or more
+                fl.setPower(0.3);
+                fr.setPower(-0.3);
+                bl.setPower(-0.5);
+                br.setPower(0.5);
+            } else {
+                fl.setPower(0.3);
+                fr.setPower(-0.3);
+                bl.setPower(-0.3);
+                br.setPower(0.3);
+            }
+
+            d = distanceSensor.getDistance(DistanceUnit.INCH);
+
+            telemetry.addData("Obstacle Distance: ", "%f", d);
+            telemetry.update();
+        }
+        StopAll();
+        double driveDistance = fl.getCurrentPosition();
+        return driveDistance;
+    }
 
     public void StopAll() {
         fl.setPower(0);
@@ -374,8 +386,6 @@ public abstract class AutoBase extends LinearOpMode {
         StopAll();
     }
 
-
-
     public boolean StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance, double stopDistance, int targetAngle) {
 
         stopDistance = stopDistance * 25.4;
@@ -463,8 +473,6 @@ public abstract class AutoBase extends LinearOpMode {
             }
         }
         else {
-            this.Strafe(.4F, safetyDistance, Direction.RIGHT);
-            StopAll();
             return false;
         }
         StopAll();
