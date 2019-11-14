@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
@@ -14,19 +15,21 @@ public class AutoBlueLoad extends AutoBase {
     public void runOpMode() throws InterruptedException {
 
         initialize();
-
         waitForStart();
 
-        while (true) {
-            float location = imageNavigation.getSkystoneLocationByTf();
-            telemetry.addData("Skystone Location:", "%f", location);
+        if (!StrafeToImage(0.45F, imageNavigation.stoneTarget, this, 8, 11, primaryAngle)) {
+            StrafeUntilDistance(0.45F, Direction.RIGHT, 10, primaryAngle, imu);
+
+            int i = 0;
+
+            while (!detectSkystoneByColor() && i < 2) {
+                Drive(0.2f, 7, Direction.BACKWARD);
+                i++;
+                telemetry.update();
+                this.sleep(200);
+            }
             telemetry.update();
-            this.sleep(1000);
         }
-
-//        if (!StrafeToImage(0.1F, imageNavigation.stoneTarget, this, 8, 11, primaryAngle))
-//            StrafeUntilDistance(5, primaryAngle, imu);
-
 
 //        this.sleep(1000);
 //        Strafe(0.1F, 3, Direction.LEFT);

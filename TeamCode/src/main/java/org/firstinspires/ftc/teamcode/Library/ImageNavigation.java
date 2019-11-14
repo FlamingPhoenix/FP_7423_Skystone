@@ -217,7 +217,8 @@ public class ImageNavigation
                 // step through the list of recognitions and display boundary info.
                 int i = 0;
                 for (Recognition recognition : updatedRecognitions) {
-                    if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
+                    if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
+                        opMode.telemetry.addData("Location: ", String.format("left=%10.2f;  right=%10.2f", recognition.getLeft(), recognition.getRight()));
                         return recognition.getLeft();
                     }
                 }

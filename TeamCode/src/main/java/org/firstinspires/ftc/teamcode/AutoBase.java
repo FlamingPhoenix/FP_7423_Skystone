@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.provider.ContactsContract;
 import android.service.dreams.DreamService;
 import android.util.Log;
 
@@ -98,6 +99,7 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     private float Max(float x1, float x2, float x3, float x4) {
+
         x1 = Math.abs(x1);
         x2 = Math.abs(x2);
         x3 = Math.abs(x3);
@@ -138,7 +140,6 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     public void color() {
-        colorSensor.enableLed(false);
         telemetry.addData("Red:", "%d", colorSensor.red());
         telemetry.addData("Green:", "%d", colorSensor.green());
         telemetry.addData("Blue:", "%d", colorSensor.blue());
@@ -152,31 +153,87 @@ public abstract class AutoBase extends LinearOpMode {
         return d;
     }
 
-    public double StrafeUntilDistance(float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
+    public double StrafeUntilDistance(float power, Direction direction, float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
         float robotCurrentAngle;
         double d = distanceSensor.getDistance(DistanceUnit.INCH);
 
         br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
         br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        float flPower, frPower, blPower, brPower;
+        float angleModify = Math.abs(power);
+        float actualPower = Math.abs(power);
+        if (direction == Direction.LEFT)
+            actualPower = -(power);
+
+
         while (d > safetyDistance) {
             robotCurrentAngle = imu.getAngularOrientation().firstAngle;
-            if (robotCurrentAngle - robotStartingAngle >= 3) { // 3 degrees or more
-                fl.setPower(0.5);
-                fr.setPower(-0.5);
-                bl.setPower(-0.3);
-                br.setPower(0.3);
-            } else if (robotCurrentAngle - robotStartingAngle <= -3) { // -3 degrees or more
-                fl.setPower(0.3);
-                fr.setPower(-0.3);
-                bl.setPower(-0.5);
-                br.setPower(0.5);
-            } else {
-                fl.setPower(0.3);
-                fr.setPower(-0.3);
-                bl.setPower(-0.3);
-                br.setPower(0.3);
+            if (direction == Direction.LEFT)
+            {
+                if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
+                {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower - angleModify;
+                    brPower = actualPower + angleModify;
+                }
+                else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                {
+                    flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower - angleModify;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                }
+                else
+                {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                }
             }
+            else if(direction == Direction.RIGHT)
+            {
+                if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
+                {
+                    flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower - angleModify;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                }
+                else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower - angleModify;
+                    brPower = actualPower + angleModify;
+                }
+                else
+                {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower;
+                    brPower = actualPower;
+                }
+            }
+            else
+            {
+                flPower = 0;
+                frPower = 0;
+                blPower = 0;
+                brPower = 0;
+            }
+
+            float max = Max(flPower, frPower, blPower, brPower);
+
+            if (max < 1)
+                max = 1; //By setting max to 1, the fl, fr, bl and br power would be the power we intended to use; and none of these are over 1 because max is less than 1
+
+            fl.setPower(flPower / max);
+            fr.setPower(frPower / max);
+            bl.setPower(blPower / max);
+            br.setPower(brPower / max);
 
             d = distanceSensor.getDistance(DistanceUnit.INCH);
 
@@ -184,7 +241,7 @@ public abstract class AutoBase extends LinearOpMode {
             telemetry.update();
         }
         StopAll();
-        double driveDistance = fl.getCurrentPosition();
+        double driveDistance = br.getCurrentPosition();
         return driveDistance;
     }
 
@@ -196,6 +253,9 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     public void Strafe(float power, float distance, Direction d /*, OpMode op*/) {
+
+        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
 
@@ -288,6 +348,9 @@ public abstract class AutoBase extends LinearOpMode {
             }
 
             float max = Max(flPower, frPower, blPower, brPower);
+
+            if (max < 1)
+                max = 1; //By setting max to 1, the fl, fr, bl and br power would be the power we intended to use; and none of these are over 1 because max is less than 1
 
             fl.setPower(flPower / max);
             fr.setPower(frPower / max);
@@ -462,6 +525,9 @@ public abstract class AutoBase extends LinearOpMode {
 
                 float max = Max(flPower, frPower, blPower, brPower);
 
+                if (max < 1)
+                    max = 1; //By setting max to 1, the fl, fr, bl and br power would be the power we intended to use; and none of these are over 1 because max is less than 1
+
                 fl.setPower(flPower / max);
                 fr.setPower(frPower / max);
                 bl.setPower(blPower / max);
@@ -478,6 +544,15 @@ public abstract class AutoBase extends LinearOpMode {
         StopAll();
         opMode.telemetry.update();
         return true;
+    }
+
+    public boolean detectSkystoneByColor() {
+        if (colorSensor.red() < 120) {
+            telemetry.addData("gotred:", "oh yes");
+            return true;
+        }
+        telemetry.addData("gotred:", "not really");
+        return false;
     }
 
     public void DriveToCoordinate(float x, float y) {
