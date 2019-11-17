@@ -52,6 +52,7 @@ public abstract class AutoBase extends LinearOpMode {
     public Servo twister;
 
     public DistanceSensor distanceSensor;
+    public DistanceSensor backLeftDistanceSensor;
     public ColorSensor colorSensor;
 
     public float PPR = 560F; //changed ppr for test robot
@@ -83,6 +84,7 @@ public abstract class AutoBase extends LinearOpMode {
         imu.initialize(new BNO055IMU.Parameters());
 
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
+        backLeftDistanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor2");
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
 
         intakeMotorLeft = hardwareMap.dcMotor.get("intaketh1");
@@ -372,8 +374,6 @@ public abstract class AutoBase extends LinearOpMode {
         br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         int currentPosition = 0;
 
-        //added code below to support reverse driving, tested Oct 29, Erik did this
-
         if (d == Direction.BACKWARD) {
             power = -1 * power;
         }
@@ -487,7 +487,7 @@ public abstract class AutoBase extends LinearOpMode {
                 lastKnownPosition.orientation = adjustedOrientation;
 
                 d = lastKnownPosition.translation.get(2);
-                x = lastKnownPosition.translation.get(1) * -1; // bc camera rotation change
+                x = lastKnownPosition.translation.get(1) * -1;
 
                 opMode.telemetry.addData("x: ", "x = %f", x);
 
@@ -497,9 +497,9 @@ public abstract class AutoBase extends LinearOpMode {
                 else if (distanceAdjustment < 700F)
                     distanceAdjustment = 0;
 
-                if (x > 15) {
+                if (x > 50) {
                     additionalpower = actualPower * 0.5F * (Math.abs(x) / 150F) * ((1200F - distanceAdjustment) / 1200F);
-                } else if (x < -15) {
+                } else if (x < -50) {
                     additionalpower = actualPower * -0.5F * (Math.abs(x) / 150F) * ((1200F - distanceAdjustment) / 1200F);
                 }
 
@@ -511,9 +511,9 @@ public abstract class AutoBase extends LinearOpMode {
 
 
                 if (angleDiff < -3) {
-                    flTurnAdjust = actualPower * -1.25F * (Math.abs(adjustedOrientation.firstAngle) / 40F) * ((1200F - distanceAdjustment) / 1200F);
+                    flTurnAdjust = actualPower * -2F;
                 } else if (angleDiff > 3) {
-                    blTurnAdjust = actualPower * 1.25F * (Math.abs(adjustedOrientation.firstAngle) / 40F) * ((1200F - distanceAdjustment) / 1200F);
+                    blTurnAdjust = actualPower * 2F;
                 }
 
                 float flPower, frPower, blPower, brPower;
@@ -533,8 +533,9 @@ public abstract class AutoBase extends LinearOpMode {
                 bl.setPower(blPower / max);
                 br.setPower(brPower / max);
                 Log.i("[phoenix:StrafeToImage]", String.format("x = %f, d = %f, addpower = %f, actpower = %f, distadj = %f", x, d, additionalpower, actualPower, distanceAdjustment));
-                // Log.i("[phoenix:StrafeToImage]", String.format("raw x=%f, y=%f, z=%f", orientation.firstAngle, orientation.secondAngle, orientation.thirdAngle));
-                Log.i("[phoenix:StrafeToImage]", String.format("adj x=%f, y=%f, z=%f, flTurnAdjust=%f, blTurnAdjust=%f", adjustedOrientation.firstAngle, adjustedOrientation.secondAngle, adjustedOrientation.thirdAngle, flTurnAdjust, blTurnAdjust));
+                Log.i("[phoenix:StrafeToImage]", String.format("angleDiff = %5.2f, currentAngle = %5.2f, flTurnAdjust = %5.4f, blTurnAdjust = %5.4f", angleDiff, currentAngle, flTurnAdjust, blTurnAdjust));
+
+                //                Log.i("[phoenix:StrafeToImage]", String.format("adj x=%f, y=%f, z=%f, flTurnAdjust=%f, blTurnAdjust=%f", adjustedOrientation.firstAngle, adjustedOrientation.secondAngle, adjustedOrientation.thirdAngle, flTurnAdjust, blTurnAdjust));
                 opMode.telemetry.update();
             }
         }
@@ -622,6 +623,61 @@ public abstract class AutoBase extends LinearOpMode {
         fr.setPower(0);
         bl.setPower(0);
         br.setPower(0);
+    }
+
+    public double DriveUntilDistance(float power, Direction direction, float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
+        float robotCurrentAngle;
+        double d = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
+
+        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //reset encoder
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        float flPower, frPower, blPower, brPower;
+        float angleModify = Math.abs(power);
+        float actualPower = Math.abs(power);
+
+
+        while (d > safetyDistance) {
+            robotCurrentAngle = imu.getAngularOrientation().firstAngle;
+                if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
+                {
+                    flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower - angleModify;
+                    brPower = -actualPower;
+                }
+                else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                {
+                    flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower;
+                    brPower = -actualPower - angleModify;
+                }
+                else
+                {
+                    flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower;
+                    brPower = -actualPower;
+                }
+            float max = Max(flPower, frPower, blPower, brPower);
+
+            if (max < 1)
+                max = 1; //By setting max to 1, the fl, fr, bl and br power would be the power we intended to use; and none of these are over 1 because max is less than 1
+
+            fl.setPower(flPower / max);
+            fr.setPower(frPower / max);
+            bl.setPower(blPower / max);
+            br.setPower(brPower / max);
+
+            d = distanceSensor.getDistance(DistanceUnit.INCH);
+
+            telemetry.addData("Obstacle Distance: ", "%f", d);
+            telemetry.update();
+        }
+        StopAll();
+        double driveDistance = br.getCurrentPosition();
+        return driveDistance;
     }
 }
 
