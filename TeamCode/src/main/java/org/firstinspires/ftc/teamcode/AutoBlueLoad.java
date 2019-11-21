@@ -39,5 +39,12 @@ public class AutoBlueLoad extends AutoBase {
                 telemetry.update();
             }
         }
+        Drive(0.2F, 8, Direction.BACKWARD);
+        this.sleep(30000);
+        Turn(0.2F, 45, Direction.CLOCKWISE, imu, this);
+        this.sleep(3000);
+        intakeMotorLeft.setPower(1);
+        intakeMotorRight.setPower(1);
+        Drive(0.2F, 8, Direction.BACKWARD);
     }
 }
