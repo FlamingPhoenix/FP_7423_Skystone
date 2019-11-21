@@ -10,7 +10,9 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.vuforia.CameraDevice;
 import com.vuforia.HINT;
 
@@ -50,6 +52,8 @@ public abstract class AutoBase extends LinearOpMode {
     public DcMotor br;
 
     public Servo twister;
+
+    Servo puller;
 
     public DistanceSensor distanceSensor;
     public DistanceSensor backLeftDistanceSensor;
@@ -98,6 +102,13 @@ public abstract class AutoBase extends LinearOpMode {
         intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         primaryAngle = (int)imu.getAngularOrientation().firstAngle;
+
+        puller = hardwareMap.servo.get("puller");
+        ServoControllerEx pullerController = (ServoControllerEx) puller.getController();
+        int pullerServoPort = puller.getPortNumber();
+        PwmControl.PwmRange pullerPwmRange = new PwmControl.PwmRange(750, 2200);
+        pullerController.setServoPwmRange(pullerServoPort, pullerPwmRange);
+        puller.setPosition(0);
     }
 
     private float Max(float x1, float x2, float x3, float x4) {
@@ -643,15 +654,15 @@ public abstract class AutoBase extends LinearOpMode {
                 {
                     flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
                     frPower = -actualPower;
-                    blPower = -actualPower - angleModify;
-                    brPower = -actualPower;
+                    blPower = -actualPower;
+                    brPower = -actualPower - angleModify;
                 }
                 else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
                 {
                     flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
                     frPower = -actualPower;
-                    blPower = -actualPower;
-                    brPower = -actualPower - angleModify;
+                    blPower = -actualPower  - angleModify;
+                    brPower = -actualPower;
                 }
                 else
                 {
@@ -670,7 +681,7 @@ public abstract class AutoBase extends LinearOpMode {
             bl.setPower(blPower / max);
             br.setPower(brPower / max);
 
-            d = distanceSensor.getDistance(DistanceUnit.INCH);
+            d = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
 
             telemetry.addData("Obstacle Distance: ", "%f", d);
             telemetry.update();
