@@ -30,7 +30,7 @@ public class MyBoschIMU implements BNO055IMU {
 
     //Constructor
     public MyBoschIMU(HardwareMap hardwareMap) {
-        myIMU = hardwareMap.get(BNO055IMU.class, "imu");
+        myIMU = hardwareMap.get(BNO055IMU.class, "imu1");
     }
 
     @Override

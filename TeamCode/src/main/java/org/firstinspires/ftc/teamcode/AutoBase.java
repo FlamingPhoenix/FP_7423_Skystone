@@ -549,6 +549,7 @@ public abstract class AutoBase extends LinearOpMode {
                 //                Log.i("[phoenix:StrafeToImage]", String.format("adj x=%f, y=%f, z=%f, flTurnAdjust=%f, blTurnAdjust=%f", adjustedOrientation.firstAngle, adjustedOrientation.secondAngle, adjustedOrientation.thirdAngle, flTurnAdjust, blTurnAdjust));
                 opMode.telemetry.update();
             }
+
         }
         else {
             return false;
@@ -689,6 +690,17 @@ public abstract class AutoBase extends LinearOpMode {
         StopAll();
         double driveDistance = br.getCurrentPosition();
         return driveDistance;
+    }
+
+    public float getSkystoneXPosition(VuforiaTrackable imageTarget) {
+        float x = 0;
+        VuforiaTrackableDefaultListener imageListener = (VuforiaTrackableDefaultListener) imageTarget.getListener();
+        if (imageListener.isVisible()) {
+            OpenGLMatrix pos = imageListener.getPose();
+            lastKnownPosition.translation = pos.getTranslation();
+            x = lastKnownPosition.translation.get(1) / 25.4F;
+        }
+        return x;
     }
 }
 

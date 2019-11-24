@@ -39,12 +39,21 @@ public class AutoBlueLoad extends AutoBase {
                 telemetry.update();
             }
         }
-        Drive(0.2F, 8, Direction.BACKWARD);
-        this.sleep(30000);
+        float distanceX = 6;
+//        distanceX = distanceX - getSkystoneXPosition(imageNavigation.stoneTarget);
+        distanceX = distanceX - lastKnownPosition.translation.get(1) / 25.4f;
+        telemetry.addData("DistanceX: ", "%f", distanceX);
+        telemetry.update();
+
+        Drive(0.2F, distanceX, Direction.BACKWARD);
+        this.sleep(3000);
         Turn(0.2F, 45, Direction.CLOCKWISE, imu, this);
         this.sleep(3000);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
-        Drive(0.2F, 8, Direction.BACKWARD);
+
+        float distanceZ = 6;
+        distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
+        Drive(0.2F, distanceZ, Direction.FORWARD);
     }
 }
