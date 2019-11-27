@@ -23,7 +23,8 @@ public class MyTele extends OpMode {
     float x1, x2, y1, y2;
     DcMotor intakeMotorLeft;
     DcMotor intakeMotorRight;
-    Servo puller;
+    Servo pullerLeft;
+    Servo pullerRight;
 
 
     public void drive(float x1, float y1, float x2) {
@@ -60,12 +61,19 @@ public class MyTele extends OpMode {
 
         intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        puller = hardwareMap.servo.get("puller");
-        ServoControllerEx pullerController = (ServoControllerEx) puller.getController();
-        int pullerServoPort = puller.getPortNumber();
-        PwmControl.PwmRange pullerPwmRange = new PwmControl.PwmRange(750, 2200);
-        pullerController.setServoPwmRange(pullerServoPort, pullerPwmRange);
-        puller.setPosition(0);
+        pullerLeft = hardwareMap.servo.get("pullerLeft");
+        ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
+        int pullerLeftServoPort = pullerLeft.getPortNumber();
+        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 2105);
+        pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
+        pullerLeft.setPosition(1);
+
+        pullerRight = hardwareMap.servo.get("pullerRight");
+        ServoControllerEx pullerRightController = (ServoControllerEx) pullerRight.getController();
+        int pullerRightServoPort = pullerRight.getPortNumber();
+        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(899, 2105);
+        pullerRightController.setServoPwmRange(pullerRightServoPort, pullerRightPwmRange);
+        pullerRight.setPosition(0);
 
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -107,10 +115,16 @@ public class MyTele extends OpMode {
             intakeMotorRight.setPower(0);
         }
 
-        if(gamepad1.left_bumper)
-            puller.setPosition(0);
-        else if(gamepad1.left_trigger >0.2)
-            puller.setPosition(1);
+        if(gamepad1.a)
+        {
+            pullerLeft.setPosition(1);
+            pullerRight.setPosition(0);
+        }
+        else if(gamepad1.left_trigger > 0.2)
+        {
+            pullerLeft.setPosition(0);
+            pullerRight.setPosition(1);
+        }
     }
 }
 

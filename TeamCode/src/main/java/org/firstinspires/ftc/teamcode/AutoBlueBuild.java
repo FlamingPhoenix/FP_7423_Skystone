@@ -13,12 +13,14 @@ public class AutoBlueBuild extends AutoBase {
         initialize();
         waitForStart();
 
-        DriveUntilDistance(0.2F, Direction.BACKWARD, 4, primaryAngle, imu);
-        puller.setPosition(1);
+        DriveUntilDistance(0.2F, Direction.FORWARD, 4, primaryAngle, imu);
+        pullerLeft.setPosition(0);
+        pullerRight.setPosition(1);
         this.sleep(1000);
-        Drive(0.7F, 24, Direction.FORWARD);
+        Drive(0.7F, 24, Direction.BACKWARD);
 
-        puller.setPosition(0);
+        pullerLeft.setPosition(1);
+        pullerRight.setPosition(0);
         this.sleep(1000);
 
         Strafe(0.3F, 12, Direction.LEFT);

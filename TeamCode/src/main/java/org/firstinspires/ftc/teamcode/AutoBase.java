@@ -53,7 +53,8 @@ public abstract class AutoBase extends LinearOpMode {
 
     public Servo twister;
 
-    Servo puller;
+    Servo pullerLeft;
+    Servo pullerRight;
 
     public DistanceSensor distanceSensor;
     public DistanceSensor backLeftDistanceSensor;
@@ -103,12 +104,19 @@ public abstract class AutoBase extends LinearOpMode {
 
         primaryAngle = (int)imu.getAngularOrientation().firstAngle;
 
-        puller = hardwareMap.servo.get("puller");
-        ServoControllerEx pullerController = (ServoControllerEx) puller.getController();
-        int pullerServoPort = puller.getPortNumber();
-        PwmControl.PwmRange pullerPwmRange = new PwmControl.PwmRange(750, 2200);
-        pullerController.setServoPwmRange(pullerServoPort, pullerPwmRange);
-        puller.setPosition(0);
+        pullerLeft = hardwareMap.servo.get("pullerLeft");
+        ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
+        int pullerLeftServoPort = pullerLeft.getPortNumber();
+        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 2105);
+        pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
+        pullerLeft.setPosition(1);
+
+        pullerRight = hardwareMap.servo.get("pullerRight");
+        ServoControllerEx pullerRightController = (ServoControllerEx) pullerRight.getController();
+        int pullerRightServoPort = pullerRight.getPortNumber();
+        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(899, 2105);
+        pullerRightController.setServoPwmRange(pullerRightServoPort, pullerRightPwmRange);
+        pullerRight.setPosition(0);
     }
 
     private float Max(float x1, float x2, float x3, float x4) {
@@ -653,24 +661,24 @@ public abstract class AutoBase extends LinearOpMode {
             robotCurrentAngle = imu.getAngularOrientation().firstAngle;
                 if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
                 {
-                    flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
-                    frPower = -actualPower;
-                    blPower = -actualPower;
-                    brPower = -actualPower - angleModify;
-                }
+                    flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = actualPower;
+                    blPower = actualPower;
+                    brPower = actualPower;
+        }
                 else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
                 {
-                    flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
-                    frPower = -actualPower;
-                    blPower = -actualPower  - angleModify;
-                    brPower = -actualPower;
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = actualPower + angleModify;
+                    blPower = actualPower;
+                    brPower = actualPower;
                 }
                 else
                 {
-                    flPower = -actualPower; //when strafe to left, actual power is negative, but power remains positive.
-                    frPower = -actualPower;
-                    blPower = -actualPower;
-                    brPower = -actualPower;
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = actualPower;
+                    blPower = actualPower;
+                    brPower = actualPower;
                 }
             float max = Max(flPower, frPower, blPower, brPower);
 
