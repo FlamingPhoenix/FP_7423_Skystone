@@ -51,9 +51,27 @@ public class AutoBlueLoad extends AutoBase {
         this.sleep(3000);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
+        this.sleep(2000);
+        intakeMotorLeft.setPower(0);
+        intakeMotorRight.setPower(0);
 
         float distanceZ = 6;
         distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
         Drive(0.2F, distanceZ, Direction.FORWARD);
+
+        float angleToBuild = primaryAngle + 90 - imu.getAngularOrientation().firstAngle;
+        Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
+
+        this.sleep(2000);
+
+        Strafe(0.2F, 18F, Direction.LEFT);
+
+        this.sleep(2000);
+
+        Drive(0.2F, 50F, Direction.FORWARD);
+
+        intakeMotorLeft.setPower(1);
+        intakeMotorRight.setPower(1);
+        this.sleep(2000);
     }
 }
