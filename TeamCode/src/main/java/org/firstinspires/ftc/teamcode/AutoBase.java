@@ -109,7 +109,7 @@ public abstract class AutoBase extends LinearOpMode {
         int pullerLeftServoPort = pullerLeft.getPortNumber();
         PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 2105);
         pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
-        pullerLeft.setPosition(1);
+        pullerLeft.setPosition(0);
 
         pullerRight = hardwareMap.servo.get("pullerRight");
         ServoControllerEx pullerRightController = (ServoControllerEx) pullerRight.getController();

@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
+        import android.util.Log;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.ColorSensor;
+        import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+        import com.qualcomm.robotcore.hardware.ColorSensor;
 
-import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
+        import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+        import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
 
 @Autonomous(name = "AutoBlueLoad", group = "none")
 public class AutoBlueLoad extends AutoBase {
@@ -46,32 +46,33 @@ public class AutoBlueLoad extends AutoBase {
         telemetry.update();
 
         Drive(0.2F, distanceX, Direction.BACKWARD);
-        this.sleep(3000);
+        this.sleep(500);
         Turn(0.2F, 45, Direction.CLOCKWISE, imu, this);
-        this.sleep(3000);
+        this.sleep(500);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
-        this.sleep(2000);
-        intakeMotorLeft.setPower(0);
-        intakeMotorRight.setPower(0);
 
         float distanceZ = 6;
         distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
         Drive(0.2F, distanceZ, Direction.FORWARD);
 
-        float angleToBuild = primaryAngle + 90 - imu.getAngularOrientation().firstAngle;
+        this.sleep(500);
+        intakeMotorLeft.setPower(0);
+        intakeMotorRight.setPower(0);
+
+        float angleToBuild = primaryAngle - imu.getAngularOrientation().firstAngle;
         Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
-        this.sleep(2000);
+        this.sleep(500);
 
         Strafe(0.2F, 18F, Direction.LEFT);
 
-        this.sleep(2000);
+        this.sleep(500);
 
         Drive(0.2F, 50F, Direction.FORWARD);
 
-        intakeMotorLeft.setPower(1);
-        intakeMotorRight.setPower(1);
-        this.sleep(2000);
+        intakeMotorLeft.setPower(-1);
+        intakeMotorRight.setPower(-1);
+        this.sleep(500);
     }
 }
