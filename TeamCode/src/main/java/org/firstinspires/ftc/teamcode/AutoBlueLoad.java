@@ -19,11 +19,11 @@ public class AutoBlueLoad extends AutoBase {
 
         Strafe(0.3F, 9F, Direction.RIGHT);
 
-        this.sleep(500);
+        this.sleep(350);
         if (!StrafeToImage(0.3F, imageNavigation.stoneTarget, this, 8, 7, primaryAngle)) {
             Drive(0.2F, 6F, Direction.BACKWARD);
 
-            this.sleep(500);
+            this.sleep(350);
             if (!StrafeToImage(0.3F, imageNavigation.stoneTarget, this, 8, 7, primaryAngle)) {
                 Drive(0.2F, 6F, Direction.FORWARD);
                 StrafeUntilDistance(0.45F, Direction.RIGHT, 10, primaryAngle, imu);
@@ -34,26 +34,29 @@ public class AutoBlueLoad extends AutoBase {
                     Drive(0.2f, 7, Direction.BACKWARD);
                     i++;
                     telemetry.update();
-                    this.sleep(200);
+                    this.sleep(350);
                 }
                 telemetry.update();
             }
         }
         float distanceX = 6;
 //        distanceX = distanceX - getSkystoneXPosition(imageNavigation.stoneTarget);
-        distanceX = distanceX - lastKnownPosition.translation.get(1) / 25.4f;
+        if(lastKnownPosition.translation != null)
+            distanceX = distanceX - lastKnownPosition.translation.get(1) / 25.4f;
         telemetry.addData("DistanceX: ", "%f", distanceX);
         telemetry.update();
 
         Drive(0.2F, distanceX, Direction.BACKWARD);
-        this.sleep(500);
+        this.sleep(100);
         Turn(0.2F, 45, Direction.CLOCKWISE, imu, this);
-        this.sleep(500);
+        this.sleep(100);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
 
         float distanceZ = 6;
-        distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
+
+        if(lastKnownPosition.translation != null)
+            distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
         Drive(0.2F, distanceZ, Direction.FORWARD);
 
         this.sleep(500);
@@ -63,16 +66,21 @@ public class AutoBlueLoad extends AutoBase {
         float angleToBuild = primaryAngle - imu.getAngularOrientation().firstAngle;
         Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
-        this.sleep(500);
+        this.sleep(100);
 
-        Strafe(0.2F, 18F, Direction.LEFT);
+        Strafe(0.3F, 9F, Direction.LEFT);
 
-        this.sleep(500);
+        this.sleep(100);
 
-        Drive(0.2F, 50F, Direction.FORWARD);
+        Drive(0.5F, 50F, Direction.FORWARD);
 
         intakeMotorLeft.setPower(-1);
         intakeMotorRight.setPower(-1);
-        this.sleep(500);
+        this.sleep(300);
+
+        intakeMotorLeft.setPower(0);
+        intakeMotorRight.setPower(0);
+
+        Drive(0.3F, 10, Direction.BACKWARD);
     }
 }

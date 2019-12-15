@@ -44,7 +44,7 @@ public class MyBoschIMU implements BNO055IMU {
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
         myIMU.initialize(parameters);
-        resetAndStart(Direction.COUNTERCLOCKWISE);
+        resetAndStart(Direction.NONE);
 
         return true;
     }
@@ -74,6 +74,14 @@ public class MyBoschIMU implements BNO055IMU {
         else if (startOrientation.firstAngle < 0 && turningDirection == Direction.CLOCKWISE && orientation.firstAngle > 0) {
              orientation.firstAngle = orientation.firstAngle - 360;
              Log.i("[phoenix:turnTest]", String.format("counterclockwise:%f", orientation.firstAngle));
+        }
+        else if (turningDirection == Direction.NONE){
+            if(startOrientation.firstAngle > 180){
+                orientation.firstAngle = orientation.firstAngle - 360;
+            }
+            else if(orientation.firstAngle < 180){
+                orientation.firstAngle = orientation.firstAngle + 360;
+            }
         }
 
 

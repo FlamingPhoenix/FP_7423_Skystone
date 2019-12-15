@@ -278,7 +278,7 @@ public abstract class AutoBase extends LinearOpMode {
         br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        imu.resetAndStart(Direction.COUNTERCLOCKWISE);
+        imu.resetAndStart(Direction.NONE);
 
         int robotStartingAngle = (int)imu.getAngularOrientation().firstAngle;
 
@@ -316,17 +316,17 @@ public abstract class AutoBase extends LinearOpMode {
             {
                 if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
                 {
-                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
-                    frPower = -actualPower;
-                    blPower = -actualPower - angleModify;
-                    brPower = actualPower + angleModify;
-                }
-                else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
-                {
                     flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
                     frPower = -actualPower - angleModify;
                     blPower = -actualPower;
                     brPower = actualPower;
+                }
+                else if (robotCurrentAngle - robotStartingAngle <= -3) // -3 degrees or more
+                {
+                    flPower = actualPower; //when strafe to left, actual power is negative, but power remains positive.
+                    frPower = -actualPower;
+                    blPower = -actualPower - angleModify;
+                    brPower = actualPower + angleModify;
                 }
                 else
                 {
@@ -372,6 +372,8 @@ public abstract class AutoBase extends LinearOpMode {
 
             if (max < 1)
                 max = 1; //By setting max to 1, the fl, fr, bl and br power would be the power we intended to use; and none of these are over 1 because max is less than 1
+
+            Log.i("[phoenix]", String.format("flPower:%10f frPower:%10f blPower:%10f brPower:%10f angleModify:%10f currentAngle:%10f", flPower / max, frPower / max, blPower / max, brPower / max, angleModify, robotCurrentAngle));
 
             fl.setPower(flPower / max);
             fr.setPower(frPower / max);
