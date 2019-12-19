@@ -63,6 +63,8 @@ public class AutoBlueLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
+        Drive(0.2F, distanceZ, Direction.BACKWARD);
+
         float angleToBuild = primaryAngle - imu.getAngularOrientation().firstAngle;
         Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 

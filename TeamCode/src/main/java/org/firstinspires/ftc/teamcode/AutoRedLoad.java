@@ -55,16 +55,18 @@ public class AutoRedLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        float angleToBuild = primaryAngle - imu.getAngularOrientation().firstAngle;
-        Turn(0.2F, (int)Math.abs(angleToBuild), Direction.COUNTERCLOCKWISE, imu, this);
+        Drive(0.2F, distanceZ, Direction.BACKWARD);
+
+        float angleToBuild = primaryAngle + 180 - Math.abs(imu.getAngularOrientation().firstAngle);
+
+        telemetry.addData("angleToBuild: ", angleToBuild);
+        telemetry.update();
+        sleep(10000);
+
+        Turn(0.2F, (int)Math.abs(angleToBuild), Direction.CLOCKWISE, imu, this);
 
         this.sleep(100);
 
-        Strafe(0.3F, 9F, Direction.LEFT);
-
-        this.sleep(100);
-
-        Turn(0.3F, 180, Direction.COUNTERCLOCKWISE, imu, this);
 
         Drive(0.5F, 50F, Direction.FORWARD);
 
