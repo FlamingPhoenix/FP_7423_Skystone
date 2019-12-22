@@ -102,7 +102,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        primaryAngle = (int)imu.getAngularOrientation().firstAngle;
+        primaryAngle = (int)imu.myIMU.getAngularOrientation().firstAngle;
 
         pullerLeft = hardwareMap.servo.get("pullerLeft");
         ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
@@ -299,7 +299,7 @@ public abstract class AutoBase extends LinearOpMode {
             op.telemetry.update();
             */
             int currentPosition = br.getCurrentPosition();
-            Log.i("[phoenix]", String.format("Current:%10d Initial:%10d", currentPosition, initialPosition));
+
             positionDiff = Math.abs(currentPosition - initialPosition); //changed encoder for test bot
             //Log.i("[Phoenix]:encoder #", Integer.toString(positionDiff));
 
@@ -314,6 +314,8 @@ public abstract class AutoBase extends LinearOpMode {
 
             if (d == Direction.LEFT)
             {
+                Log.i("[phoenix:strafe]", String.format("Strafing left;startingAngle= %d; currentAngle=%f10.2", robotStartingAngle, robotCurrentAngle));
+
                 if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
                 {
                     flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.
@@ -338,6 +340,8 @@ public abstract class AutoBase extends LinearOpMode {
             }
             else if(d == Direction.RIGHT)
             {
+                Log.i("[phoenix:strafe]", String.format("Strafing right;startingAngle= %d; currentAngle=%f10.2", robotStartingAngle, robotCurrentAngle));
+
                 if (robotCurrentAngle - robotStartingAngle >= 3) // 3 degrees or more
                 {
                     flPower = actualPower + angleModify; //when strafe to left, actual power is negative, but power remains positive.

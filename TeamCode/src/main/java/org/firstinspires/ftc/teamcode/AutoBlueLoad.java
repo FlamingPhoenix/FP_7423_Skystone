@@ -65,7 +65,14 @@ public class AutoBlueLoad extends AutoBase {
 
         Drive(0.2F, distanceZ, Direction.BACKWARD);
 
+        imu.resetAndStart(Direction.COUNTERCLOCKWISE);
+
         float angleToBuild = primaryAngle - imu.getAngularOrientation().firstAngle;
+
+        Log.i("[phoenix]", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
+        telemetry.addData("cac result", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
+        telemetry.update();
+        sleep(5000);
         Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
         this.sleep(100);

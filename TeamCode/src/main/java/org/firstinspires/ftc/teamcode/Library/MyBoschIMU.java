@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.Direction;
 public class MyBoschIMU implements BNO055IMU {
 
 
-    private BNO055IMU myIMU;  //the original IMU object
+    public BNO055IMU myIMU;  //the original IMU object
 
     private Orientation startOrientation; //Sets the starting orientation before IMU start moving; it needs to be set by calling resetAndStart
     private Direction turningDirection; //Sets the turning direction so that MyBoschIMU can use this data to adjust the value in getAngularOrientation
@@ -69,18 +69,18 @@ public class MyBoschIMU implements BNO055IMU {
 
         if (startOrientation.firstAngle > 0 && turningDirection == Direction.COUNTERCLOCKWISE && orientation.firstAngle < 0) {
              orientation.firstAngle = orientation.firstAngle + 360;
-             Log.i("[phoenix:turnTest]", String.format("clockwise:%f", orientation.firstAngle));
+             Log.i("[phoenix:turnTest]", String.format("counterclockwise:%f", orientation.firstAngle));
         }
         else if (startOrientation.firstAngle < 0 && turningDirection == Direction.CLOCKWISE && orientation.firstAngle > 0) {
              orientation.firstAngle = orientation.firstAngle - 360;
-             Log.i("[phoenix:turnTest]", String.format("counterclockwise:%f", orientation.firstAngle));
+             Log.i("[phoenix:turnTest]", String.format("clockwise:%f", orientation.firstAngle));
         }
         else if (turningDirection == Direction.NONE){
-            if(startOrientation.firstAngle > 180){
-                orientation.firstAngle = orientation.firstAngle - 360;
-            }
-            else if(orientation.firstAngle < 180){
+            if (startOrientation.firstAngle > 0 && orientation.firstAngle < -90) {
                 orientation.firstAngle = orientation.firstAngle + 360;
+            }
+            else if (startOrientation.firstAngle < 0 && orientation.firstAngle > 90) {
+                orientation.firstAngle = orientation.firstAngle - 360;
             }
         }
 
