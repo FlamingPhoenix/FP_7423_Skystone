@@ -73,6 +73,8 @@ public abstract class AutoBase extends LinearOpMode {
 
     public int primaryAngle;
 
+    public int skystonePosition = 0;
+
     public void initialize() {
         lastKnownPosition = new PositionToImage(); //instantiate this first
 

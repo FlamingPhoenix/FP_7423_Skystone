@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name = "AutoRedLoad", group = "none")
@@ -10,16 +12,17 @@ public class AutoRedLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.3F, 9F, Direction.RIGHT);
+        Strafe(0.4F, 7F, Direction.RIGHT);
 
-        this.sleep(350);
-        if (!StrafeToImage(0.3F, imageNavigation.stoneTarget, this, 8, 7, primaryAngle)) {
-            Drive(0.2F, 6F, Direction.FORWARD);
+        this.sleep(600);
+        if (!StrafeToImage(0.4F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
+            Drive(0.2F, 8F, Direction.FORWARD);
 
-            this.sleep(350);
-            if (!StrafeToImage(0.3F, imageNavigation.stoneTarget, this, 8, 7, primaryAngle)) {
+            this.sleep(600);
+            if (!StrafeToImage(0.4F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
                 Drive(0.2F, 6F, Direction.BACKWARD);
-                StrafeUntilDistance(0.3F, Direction.RIGHT, 7, primaryAngle, imu);
+                sleep(300);
+                StrafeUntilDistance(0.3F, Direction.RIGHT, 5, primaryAngle, imu);
 
                 int i = 0;
 
@@ -29,9 +32,15 @@ public class AutoRedLoad extends AutoBase {
                     telemetry.update();
                     this.sleep(350);
                 }
+                skystonePosition = i + 1;
                 telemetry.update();
             }
+            else {
+                skystonePosition = 3;
+            }
         }
+        Log.i("[phoenix]", String.format("skystonePosition = %d", skystonePosition));
+
         float distanceX = 6;
 //        distanceX = distanceX - getSkystoneXPosition(imageNavigation.stoneTarget);
         if(lastKnownPosition.translation != null)
@@ -46,7 +55,7 @@ public class AutoRedLoad extends AutoBase {
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
 
-        float distanceZ = 10;
+        float distanceZ = 7;
         if(lastKnownPosition.translation != null)
             distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
         Drive(0.2F, distanceZ, Direction.FORWARD);
@@ -55,7 +64,7 @@ public class AutoRedLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        Drive(0.2F, distanceZ, Direction.BACKWARD);
+        Drive(0.8F, distanceZ, Direction.BACKWARD);
 
         imu.resetAndStart(Direction.CLOCKWISE);
 
@@ -64,7 +73,7 @@ public class AutoRedLoad extends AutoBase {
         telemetry.addData("angleToBuild: ", angleToBuild);
         telemetry.update();
 
-        Turn(0.2F, (int)Math.abs(angleToBuild), Direction.CLOCKWISE, imu, this);
+        Turn(0.2F, (int)angleToBuild, Direction.CLOCKWISE, imu, this);
 
         this.sleep(100);
 
