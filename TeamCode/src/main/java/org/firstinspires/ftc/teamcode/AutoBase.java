@@ -476,6 +476,24 @@ public abstract class AutoBase extends LinearOpMode {
         StopAll();
     }
 
+    public void resetAllEncoders() {
+        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public double getLateralMovement() {
+        int frCount = fr.getCurrentPosition();
+        int brCount = br.getCurrentPosition();
+        int encoderValue = (frCount + brCount)/2;
+        double distance = ((double)encoderValue * (double)6 * Math.PI) / (double) 1120;
+
+        Log.i("[phoenix:getLateral]", String.format("br=%d; fr=%d; distance=%f10.2; encoderValue=%d", brCount, frCount, distance, encoderValue));
+
+        return distance;
+    }
+
     public boolean StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance, double stopDistance, int targetAngle) {
 
         stopDistance = stopDistance * 25.4;

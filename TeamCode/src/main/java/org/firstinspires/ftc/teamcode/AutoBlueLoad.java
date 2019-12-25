@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode;
 
         import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
         import com.qualcomm.robotcore.hardware.ColorSensor;
+        import com.qualcomm.robotcore.hardware.DcMotor;
 
         import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
         import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
@@ -17,12 +18,16 @@ public class AutoBlueLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.4F, 7F, Direction.RIGHT);
+        Strafe(0.4F, 6F, Direction.RIGHT);
 
         this.sleep(600);
+
+        resetAllEncoders();
+
         if (!StrafeToImage(0.4F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
             Drive(0.2F, 8F, Direction.BACKWARD);
 
+            resetAllEncoders();
             this.sleep(600);
             if (!StrafeToImage(0.4F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
                 Drive(0.2F, 6F, Direction.FORWARD);
@@ -40,7 +45,19 @@ public class AutoBlueLoad extends AutoBase {
                 telemetry.update();
             }
             else {
-                skystonePosition = 3;
+                double distance = getLateralMovement();
+                if (distance < -4) {
+                    skystonePosition = 3;
+                } else {
+                    skystonePosition = 2;
+                }
+            }
+        } else {
+            double distance = getLateralMovement();
+            if (distance < -4) {
+                skystonePosition = 2;
+            } else {
+                skystonePosition = 1;
             }
         }
 
@@ -84,7 +101,11 @@ public class AutoBlueLoad extends AutoBase {
 
         this.sleep(100);
 
-        Drive(0.5F, 50F, Direction.FORWARD);
+        //driving towards build zone
+        Log.i("[phoenix:skystonePos]", String.format("skystonePosition=%d", skystonePosition));
+        sleep(10000);
+        double distanceToBuildZone = 50 + 8 * (skystonePosition - 1);
+        Drive(0.5F, (float)distanceToBuildZone, Direction.FORWARD);
 
         intakeMotorLeft.setPower(-1);
         intakeMotorRight.setPower(-1);
