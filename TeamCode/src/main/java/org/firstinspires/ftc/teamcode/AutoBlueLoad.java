@@ -7,6 +7,7 @@ package org.firstinspires.ftc.teamcode;
         import com.qualcomm.robotcore.hardware.DcMotor;
 
         import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+        import org.firstinspires.ftc.teamcode.Library.ImageNavigation;
         import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
 
 @Autonomous(name = "AutoBlueLoad", group = "none")
@@ -114,6 +115,10 @@ public class AutoBlueLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        Drive(0.3F, 10, Direction.BACKWARD);
+        Turn(0.4f, 179, Direction.CLOCKWISE, imu, this);
+        Drive(0.5F, 50F, Direction.FORWARD);
+
+        OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
+
     }
 }
