@@ -7,6 +7,7 @@ package org.firstinspires.ftc.teamcode;
         import com.qualcomm.robotcore.hardware.DcMotor;
 
         import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+        import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
         import org.firstinspires.ftc.teamcode.Library.ImageNavigation;
         import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
 
@@ -104,7 +105,7 @@ public class AutoBlueLoad extends AutoBase {
 
         //driving towards build zone
         Log.i("[phoenix:skystonePos]", String.format("skystonePosition=%d", skystonePosition));
-        sleep(10000);
+        sleep(100);
         double distanceToBuildZone = 50 + 8 * (skystonePosition - 1);
         Drive(0.5F, (float)distanceToBuildZone, Direction.FORWARD);
 
@@ -118,7 +119,50 @@ public class AutoBlueLoad extends AutoBase {
         Turn(0.4f, 179, Direction.CLOCKWISE, imu, this);
         Drive(0.5F, 50F, Direction.FORWARD);
 
+        sleep(100);
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
+        VectorF vector = coordinates.getTranslation();
+
+        double dy = 8;
+
+        double skystoneY = 48 + (skystonePosition - 1) * 8;
+
+        if (coordinates != null) {
+            Log.i("[phoenix:nav]", String.format("x=%f10.2; y=%f10.2; z=%f10.2", vector.get(0), vector.get(1), vector.get(2)));
+
+            dy = Math.abs(vector.get(1) / 25.4) - 24; // distance between robot and stone
+            double dx = Math.abs(vector.get(0) / 25.4) - (skystoneY - dy);
+
+            Log.i("[phoenix:nav]", String.format("dx=%f10.2; dy=%f10.2", dx, dy));
+
+            if (dx > 2)
+                Drive(0.2f, (float) Math.abs(dx), Direction.BACKWARD);
+            else if (dx < -2)
+                Drive(0.2f, (float) Math.abs(dx), Direction.FORWARD);
+
+        } else {
+            Log.i("[phoenix:nav]", "Can't see Image");
+        }
+        sleep(100);
+
+        Turn(0.2f, 45, Direction.COUNTERCLOCKWISE, imu, this);
+        intakeMotorLeft.setPower(1);
+        intakeMotorRight.setPower(1);
+
+        Drive(0.3f, (float) Math.abs(dy)* (float) Math.sqrt(2), Direction.FORWARD);
+        sleep(100);
+        intakeMotorRight.setPower(0);
+        intakeMotorLeft.setPower(0);
+        Drive(0.5f, (float) Math.abs(dy)* (float) Math.sqrt(2), Direction.BACKWARD);
+
+        imu.resetAndStart(Direction.COUNTERCLOCKWISE);
+        angleToBuild = primaryAngle + imu.getAngularOrientation().firstAngle;
+
+        Log.i("[phoenix]", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
+        telemetry.addData("cac result", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
+        telemetry.update();
+
+        Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
     }
 }
