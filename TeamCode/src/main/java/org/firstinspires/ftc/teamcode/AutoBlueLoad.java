@@ -26,12 +26,12 @@ public class AutoBlueLoad extends AutoBase {
 
         resetAllEncoders();
 
-        if (!StrafeToImage(0.4F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
+        if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
             Drive(0.2F, 8F, Direction.BACKWARD);
 
             resetAllEncoders();
             this.sleep(600);
-            if (!StrafeToImage(0.4F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
+            if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
                 Drive(0.2F, 6F, Direction.FORWARD);
                 StrafeUntilDistance(0.3F, Direction.RIGHT, 5, primaryAngle, imu);
 
@@ -85,7 +85,7 @@ public class AutoBlueLoad extends AutoBase {
             distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
         Drive(0.2F, distanceZ, Direction.FORWARD);
 
-        this.sleep(500);
+        this.sleep(300);
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
@@ -109,17 +109,17 @@ public class AutoBlueLoad extends AutoBase {
         double distanceToBuildZone = 50 + 8 * (skystonePosition - 1);
         Drive(0.5F, (float)distanceToBuildZone, Direction.FORWARD);
 
-        intakeMotorLeft.setPower(-1);
-        intakeMotorRight.setPower(-1);
+        releaseStone();
         this.sleep(300);
 
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        Turn(0.4f, 179, Direction.CLOCKWISE, imu, this);
-        Drive(0.5F, 50F, Direction.FORWARD);
-
         sleep(100);
+        Turn(0.4f, 179, Direction.CLOCKWISE, imu, this);
+        Drive(0.5F, 45F, Direction.FORWARD);
+
+        sleep(50);
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
         VectorF vector = coordinates.getTranslation();
 
@@ -130,14 +130,14 @@ public class AutoBlueLoad extends AutoBase {
         if (coordinates != null) {
             Log.i("[phoenix:nav]", String.format("x=%f10.2; y=%f10.2; z=%f10.2", vector.get(0), vector.get(1), vector.get(2)));
 
-            dy = Math.abs(vector.get(1) / 25.4) - 24; // distance between robot and stone
+            dy = (Math.abs(vector.get(1) / 25.4) - 24) - 7; // distance between robot and stone
             double dx = Math.abs(vector.get(0) / 25.4) - (skystoneY - dy);
 
             Log.i("[phoenix:nav]", String.format("dx=%f10.2; dy=%f10.2", dx, dy));
 
-            if (dx > 2)
+            if (dx > 1)
                 Drive(0.2f, (float) Math.abs(dx), Direction.BACKWARD);
-            else if (dx < -2)
+            else if (dx < -1)
                 Drive(0.2f, (float) Math.abs(dx), Direction.FORWARD);
 
         } else {
@@ -153,7 +153,7 @@ public class AutoBlueLoad extends AutoBase {
         sleep(100);
         intakeMotorRight.setPower(0);
         intakeMotorLeft.setPower(0);
-        Drive(0.5f, (float) Math.abs(dy)* (float) Math.sqrt(2), Direction.BACKWARD);
+        Drive(0.5f, 12, Direction.BACKWARD);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
         angleToBuild = primaryAngle + imu.getAngularOrientation().firstAngle;
@@ -162,7 +162,19 @@ public class AutoBlueLoad extends AutoBase {
         telemetry.addData("cac result", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
         telemetry.update();
 
-        Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
+        Turn(0.2F, 180 + (int)angleToBuild, Direction.CLOCKWISE, imu, this);
 
+        distanceToBuildZone = 45 + 8 * (skystonePosition - 1);
+        Drive(0.5F, (float)distanceToBuildZone, Direction.BACKWARD);
+        Turn(0.2f, 90, Direction.COUNTERCLOCKWISE, imu, this);
+
+        releaseStone();
+
+        sleep(300);
+
+        intakeMotorRight.setPower(0);
+        intakeMotorLeft.setPower(0);
+
+        Strafe(0.3f, 8, Direction.RIGHT);
     }
 }

@@ -171,9 +171,13 @@ public abstract class AutoBase extends LinearOpMode {
 
 
     public double getObstacleDistance() {
-        double d = distanceSensor.getDistance(DistanceUnit.INCH);
-        telemetry.addData("Obstacle Distance: ", "%f", d);
-        return d;
+        if (distanceSensor != null) {
+            double d = distanceSensor.getDistance(DistanceUnit.INCH);
+            telemetry.addData("Obstacle Distance: ", "%f", d);
+            return d;
+        }
+        else
+            return -1;
     }
 
     public double StrafeUntilDistance(float power, Direction direction, float safetyDistance, float robotStartingAngle, MyBoschIMU imu) {
@@ -512,7 +516,12 @@ public abstract class AutoBase extends LinearOpMode {
 
             Log.i("[phoenix]", String.format("distanceImage (before loop) = %10.2f", d));
 
-            while ((Math.abs(d) >= stopDistance) && (imageListener.isVisible()) && opMode.opModeIsActive()) {
+            Boolean tooCloseToObstacle = false;
+            double distanceToObstacle = getObstacleDistance();
+            if (distanceToObstacle < 5 && distanceToObstacle > 0)
+                tooCloseToObstacle = true;
+
+            while ((Math.abs(d) >= stopDistance) && !tooCloseToObstacle && (imageListener.isVisible()) && opMode.opModeIsActive()) {
 
                 pos = ((VuforiaTrackableDefaultListener) imageTarget.getListener()).getPose();
                 d = pos.getColumn(3).get(2); //distance to the image in millimeter;
@@ -582,6 +591,9 @@ public abstract class AutoBase extends LinearOpMode {
 
                 //                Log.i("[phoenix:StrafeToImage]", String.format("adj x=%f, y=%f, z=%f, flTurnAdjust=%f, blTurnAdjust=%f", adjustedOrientation.firstAngle, adjustedOrientation.secondAngle, adjustedOrientation.thirdAngle, flTurnAdjust, blTurnAdjust));
                 opMode.telemetry.update();
+
+                if (distanceToObstacle < 5 && distanceToObstacle > 0)
+                    tooCloseToObstacle = true;
             }
 
         }
@@ -735,6 +747,11 @@ public abstract class AutoBase extends LinearOpMode {
             x = lastKnownPosition.translation.get(1) / 25.4F;
         }
         return x;
+    }
+
+    public void releaseStone(){
+        intakeMotorLeft.setPower(-1);
+        intakeMotorRight.setPower(-1);
     }
 }
 
