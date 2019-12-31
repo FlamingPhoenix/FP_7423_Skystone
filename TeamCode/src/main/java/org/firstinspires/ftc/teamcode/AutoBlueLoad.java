@@ -22,7 +22,7 @@ public class AutoBlueLoad extends AutoBase {
 
         Strafe(0.4F, 6F, Direction.RIGHT);
 
-        this.sleep(600);
+        sleep(600);
 
         resetAllEncoders();
 
@@ -30,7 +30,7 @@ public class AutoBlueLoad extends AutoBase {
             Drive(0.2F, 8F, Direction.BACKWARD);
 
             resetAllEncoders();
-            this.sleep(600);
+            sleep(600);
             if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
                 Drive(0.2F, 6F, Direction.FORWARD);
                 StrafeUntilDistance(0.3F, Direction.RIGHT, 5, primaryAngle, imu);
@@ -41,7 +41,7 @@ public class AutoBlueLoad extends AutoBase {
                     Drive(0.2f, 7, Direction.BACKWARD);
                     i++;
                     telemetry.update();
-                    this.sleep(350);
+                    sleep(350);
                 }
                 skystonePosition = i + 1;
                 telemetry.update();
@@ -73,9 +73,9 @@ public class AutoBlueLoad extends AutoBase {
         telemetry.update();
 
         Drive(0.2F, distanceX, Direction.BACKWARD);
-        this.sleep(100);
+        sleep(100);
         Turn(0.2F, 45, Direction.CLOCKWISE, imu, this);
-        this.sleep(100);
+        sleep(100);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
 
@@ -85,7 +85,7 @@ public class AutoBlueLoad extends AutoBase {
             distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
         Drive(0.2F, distanceZ, Direction.FORWARD);
 
-        this.sleep(300);
+        sleep(300);
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
@@ -101,7 +101,7 @@ public class AutoBlueLoad extends AutoBase {
 
         Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
-        this.sleep(100);
+        sleep(100);
 
         //driving towards build zone
         Log.i("[phoenix:skystonePos]", String.format("skystonePosition=%d", skystonePosition));
@@ -110,10 +110,6 @@ public class AutoBlueLoad extends AutoBase {
         Drive(0.5F, (float)distanceToBuildZone, Direction.FORWARD);
 
         releaseStone();
-        this.sleep(300);
-
-        intakeMotorLeft.setPower(0);
-        intakeMotorRight.setPower(0);
 
         sleep(100);
         Turn(0.4f, 179, Direction.CLOCKWISE, imu, this);
@@ -169,11 +165,6 @@ public class AutoBlueLoad extends AutoBase {
         Turn(0.2f, 90, Direction.COUNTERCLOCKWISE, imu, this);
 
         releaseStone();
-
-        sleep(300);
-
-        intakeMotorRight.setPower(0);
-        intakeMotorLeft.setPower(0);
 
         Strafe(0.3f, 8, Direction.RIGHT);
     }

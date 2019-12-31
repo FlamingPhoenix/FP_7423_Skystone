@@ -752,6 +752,11 @@ public abstract class AutoBase extends LinearOpMode {
     public void releaseStone(){
         intakeMotorLeft.setPower(-1);
         intakeMotorRight.setPower(-1);
+
+        this.sleep(300);
+
+        intakeMotorLeft.setPower(0);
+        intakeMotorRight.setPower(0);
     }
 }
 
