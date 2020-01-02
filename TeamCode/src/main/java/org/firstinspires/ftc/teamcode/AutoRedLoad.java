@@ -60,7 +60,7 @@ public class AutoRedLoad extends AutoBase {
 
         Log.i("[phoenix]", String.format("skystonePosition = %d", skystonePosition));
 
-        float distanceX = 6;
+        float distanceX = 4;
 //        distanceX = distanceX - getSkystoneXPosition(imageNavigation.stoneTarget);
         if(lastKnownPosition.translation != null)
             distanceX = distanceX - lastKnownPosition.translation.get(1) / 25.4f;
@@ -88,13 +88,13 @@ public class AutoRedLoad extends AutoBase {
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
 
-        float angleToBuild = primaryAngle - imu.getAngularOrientation().firstAngle;
+        float angleToBuild = 180 - Math.abs(primaryAngle - imu.getAngularOrientation().firstAngle);
 
         Log.i("[phoenix]", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
         telemetry.addData("cac result", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
         telemetry.update();
 
-        Turn(0.2F, (int)angleToBuild, Direction.CLOCKWISE, imu, this); //TODO
+        Turn(0.2F, (int)angleToBuild, Direction.CLOCKWISE, imu, this);
 
         sleep(100);
 
@@ -144,7 +144,8 @@ public class AutoRedLoad extends AutoBase {
         sleep(100);
         intakeMotorRight.setPower(0);
         intakeMotorLeft.setPower(0);
-        Drive(0.5f, 12, Direction.BACKWARD);
+        float angleToStone = Math.abs((180 - Math.abs(imu.getAngularOrientation().firstAngle)));
+        Drive(0.5f, 12/(float)Math.sin(Math.toRadians(angleToStone)), Direction.BACKWARD);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
         angleToBuild = primaryAngle + imu.getAngularOrientation().firstAngle;
@@ -155,7 +156,7 @@ public class AutoRedLoad extends AutoBase {
 
         Turn(0.2F, 180 - (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
-        distanceToBuildZone = 45 + 8 * (skystonePosition - 1);
+        distanceToBuildZone = (48 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
         Drive(0.5F, (float)distanceToBuildZone, Direction.BACKWARD);
         Turn(0.2f, 90, Direction.CLOCKWISE, imu, this);
 

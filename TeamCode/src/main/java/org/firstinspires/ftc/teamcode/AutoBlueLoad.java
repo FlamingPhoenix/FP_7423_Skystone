@@ -113,7 +113,7 @@ public class AutoBlueLoad extends AutoBase {
 
         sleep(100);
         Turn(0.4f, 179, Direction.CLOCKWISE, imu, this);
-        Drive(0.5F, 45F, Direction.FORWARD);
+        Drive(0.5F, 43F, Direction.FORWARD);
 
         sleep(50);
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
@@ -146,10 +146,12 @@ public class AutoBlueLoad extends AutoBase {
         intakeMotorRight.setPower(1);
 
         Drive(0.3f, (float) Math.abs(dy)* (float) Math.sqrt(2), Direction.FORWARD);
-        sleep(100);
+        sleep(300);
         intakeMotorRight.setPower(0);
         intakeMotorLeft.setPower(0);
-        Drive(0.5f, 12, Direction.BACKWARD);
+        float angleToStone = Math.abs((180 - Math.abs(imu.getAngularOrientation().firstAngle)));
+        Log.i("[phoenix]", String.format("angleToStone = %f10.2", angleToStone));
+        Drive(0.5f, 12/(float)Math.sin(Math.toRadians(angleToStone)), Direction.BACKWARD);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
         angleToBuild = primaryAngle + imu.getAngularOrientation().firstAngle;
@@ -160,7 +162,7 @@ public class AutoBlueLoad extends AutoBase {
 
         Turn(0.2F, 180 + (int)angleToBuild, Direction.CLOCKWISE, imu, this);
 
-        distanceToBuildZone = 45 + 8 * (skystonePosition - 1);
+        distanceToBuildZone = (48 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
         Drive(0.5F, (float)distanceToBuildZone, Direction.BACKWARD);
         Turn(0.2f, 90, Direction.COUNTERCLOCKWISE, imu, this);
 
