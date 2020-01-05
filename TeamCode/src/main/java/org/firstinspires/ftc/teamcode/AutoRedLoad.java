@@ -15,9 +15,9 @@ public class AutoRedLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.4F, 6F, Direction.RIGHT);
+        Strafe(0.5F, 8F, Direction.RIGHT);
 
-        sleep(600);
+        sleep(700);
 
         resetAllEncoders();
 
@@ -60,7 +60,7 @@ public class AutoRedLoad extends AutoBase {
 
         Log.i("[phoenix]", String.format("skystonePosition = %d", skystonePosition));
 
-        float distanceX = 4;
+        float distanceX = 6;
 //        distanceX = distanceX - getSkystoneXPosition(imageNavigation.stoneTarget);
         if(lastKnownPosition.translation != null)
             distanceX = distanceX - lastKnownPosition.translation.get(1) / 25.4f;
@@ -69,7 +69,7 @@ public class AutoRedLoad extends AutoBase {
 
         Drive(0.2F, distanceX, Direction.BACKWARD);
         sleep(100);
-        Turn(0.2F, 45, Direction.CLOCKWISE, imu, this);
+        Turn(0.3F, 45, Direction.CLOCKWISE, imu, this);
         sleep(100);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
@@ -84,7 +84,7 @@ public class AutoRedLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        Drive(0.8F, distanceZ, Direction.BACKWARD);
+        Drive(0.8F, distanceZ - 1, Direction.BACKWARD);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
 
@@ -101,7 +101,7 @@ public class AutoRedLoad extends AutoBase {
         //driving towards build zone
         Log.i("[phoenix:skystonePos]", String.format("skystonePosition=%d", skystonePosition));
         sleep(100);
-        double distanceToBuildZone = 50 + 8 * (skystonePosition - 1);
+        double distanceToBuildZone = 22 + 8 * (skystonePosition - 1); // CHANGED FROM 50 BECAUSE OF BRANDON
         Drive(0.5F, (float)distanceToBuildZone, Direction.FORWARD);
 
         releaseStone();
@@ -121,22 +121,22 @@ public class AutoRedLoad extends AutoBase {
         if (coordinates != null) {
             Log.i("[phoenix:nav]", String.format("x=%f10.2; y=%f10.2; z=%f10.2", vector.get(0), vector.get(1), vector.get(2)));
 
-            dy = (Math.abs(vector.get(1) / 25.4) - 24) - 7; // distance between robot and stone
+            dy = (Math.abs(vector.get(1) / 25.4) - 24) - 5; // distance between robot and stone
             double dx = Math.abs(vector.get(0) / 25.4) - (skystoneY - dy);
 
             Log.i("[phoenix:nav]", String.format("dx=%f10.2; dy=%f10.2", dx, dy));
 
             if (dx > 1)
-                Drive(0.2f, (float) Math.abs(dx), Direction.BACKWARD);
-            else if (dx < -1)
                 Drive(0.2f, (float) Math.abs(dx), Direction.FORWARD);
+            else if (dx < -1)
+                Drive(0.2f, (float) Math.abs(dx), Direction.BACKWARD);
 
         } else {
             Log.i("[phoenix:nav]", "Can't see Image");
         }
         sleep(100);
 
-        Turn(0.2f, 135, Direction.COUNTERCLOCKWISE, imu, this);
+        Turn(0.4f, 135, Direction.COUNTERCLOCKWISE, imu, this);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
 
@@ -148,20 +148,20 @@ public class AutoRedLoad extends AutoBase {
         Drive(0.5f, 12/(float)Math.sin(Math.toRadians(angleToStone)), Direction.BACKWARD);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
-        angleToBuild = primaryAngle + imu.getAngularOrientation().firstAngle;
+        angleToBuild = Math.abs(primaryAngle + imu.getAngularOrientation().firstAngle);
 
         Log.i("[phoenix]", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
         telemetry.addData("cac result", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
         telemetry.update();
 
-        Turn(0.2F, 180 - (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
+        Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
-        distanceToBuildZone = (48 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
+        distanceToBuildZone = (33 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
         Drive(0.5F, (float)distanceToBuildZone, Direction.BACKWARD);
         Turn(0.2f, 90, Direction.CLOCKWISE, imu, this);
 
         releaseStone();
 
-        Strafe(0.3f, 8, Direction.LEFT);
+        Strafe(0.5f, 10, Direction.LEFT);
     }
 }

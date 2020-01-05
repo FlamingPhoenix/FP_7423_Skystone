@@ -20,7 +20,7 @@ public class AutoBlueLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.4F, 6F, Direction.RIGHT);
+        Strafe(0.4F, 8F, Direction.RIGHT);
 
         sleep(600);
 
@@ -115,7 +115,7 @@ public class AutoBlueLoad extends AutoBase {
         Turn(0.4f, 179, Direction.CLOCKWISE, imu, this);
         Drive(0.5F, 43F, Direction.FORWARD);
 
-        sleep(50);
+        sleep(100);
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
         VectorF vector = coordinates.getTranslation();
 
