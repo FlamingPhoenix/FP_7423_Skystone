@@ -64,7 +64,7 @@ public class MyTele extends OpMode {
         pullerLeft = hardwareMap.servo.get("pullerLeft");
         ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
         int pullerLeftServoPort = pullerLeft.getPortNumber();
-        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 2105);
+        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 1335);
         pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
         pullerLeft.setPosition(0);
 
