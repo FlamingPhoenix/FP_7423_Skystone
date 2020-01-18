@@ -607,6 +607,12 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     public boolean detectSkystoneByColor() {
+
+//        if(colorSensor.green() > _____ && colorSensor.blue() > ______)
+//            return false;
+//
+//        else
+//            return true;
         if (colorSensor.red() < 140) {
             telemetry.addData("gotred:", "oh yes");
             return true;
