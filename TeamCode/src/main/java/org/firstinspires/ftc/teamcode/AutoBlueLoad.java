@@ -8,6 +8,7 @@ package org.firstinspires.ftc.teamcode;
 
         import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
         import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+        import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
         import org.firstinspires.ftc.teamcode.Library.ImageNavigation;
         import org.firstinspires.ftc.teamcode.Library.MyBoschIMU;
 
@@ -83,7 +84,7 @@ public class AutoBlueLoad extends AutoBase {
 
         if(lastKnownPosition.translation != null)
             distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
-        Drive(0.2F, distanceZ - 2, Direction.FORWARD);
+        Drive(0.2F, distanceZ, Direction.FORWARD);
 
         sleep(300);
         intakeMotorLeft.setPower(0);
@@ -136,7 +137,8 @@ public class AutoBlueLoad extends AutoBase {
             else if (dx < -1)
                 Drive(0.2f, (float) Math.abs(dx), Direction.FORWARD);
 
-        } else {
+        }
+        else {
             Log.i("[phoenix:nav]", "Can't see Image");
         }
         sleep(100);

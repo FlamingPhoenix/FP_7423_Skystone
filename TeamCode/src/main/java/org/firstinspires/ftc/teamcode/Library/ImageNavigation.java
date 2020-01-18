@@ -261,7 +261,6 @@ public class ImageNavigation
                         return robotLocationTransform;
                     }
                 }
-
             }
 
             opMode.telemetry.update();
