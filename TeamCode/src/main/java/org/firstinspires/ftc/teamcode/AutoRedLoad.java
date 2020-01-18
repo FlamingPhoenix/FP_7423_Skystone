@@ -21,12 +21,12 @@ public class AutoRedLoad extends AutoBase {
 
         resetAllEncoders();
 
-        if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
+        if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8)) {
             Drive(0.2F, 8F, Direction.FORWARD);
 
             resetAllEncoders();
             sleep(600);
-            if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
+            if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8)) {
                 Drive(0.2F, 6F, Direction.BACKWARD);
                 StrafeUntilDistance(0.3F, Direction.RIGHT, 5, primaryAngle, imu);
 
@@ -69,7 +69,7 @@ public class AutoRedLoad extends AutoBase {
 
         Drive(0.2F, distanceX, Direction.BACKWARD);
         sleep(100);
-        Turn(0.3F, 45, Direction.CLOCKWISE, imu, this);
+        Turn(0.3F, 55, Direction.CLOCKWISE, imu, this);
         sleep(100);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);

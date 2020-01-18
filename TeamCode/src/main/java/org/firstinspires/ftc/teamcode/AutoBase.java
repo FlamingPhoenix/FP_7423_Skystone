@@ -109,7 +109,7 @@ public abstract class AutoBase extends LinearOpMode {
         pullerLeft = hardwareMap.servo.get("pullerLeft");
         ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
         int pullerLeftServoPort = pullerLeft.getPortNumber();
-        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 2105);
+        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 1335);
         pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
         pullerLeft.setPosition(0);
 
@@ -498,7 +498,7 @@ public abstract class AutoBase extends LinearOpMode {
         return distance;
     }
 
-    public boolean StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, float safetyDistance, double stopDistance, int targetAngle) {
+    public boolean StrafeToImage(float power, VuforiaTrackable imageTarget, LinearOpMode opMode, double stopDistance) {
 
         stopDistance = stopDistance * 25.4;
 
@@ -517,8 +517,9 @@ public abstract class AutoBase extends LinearOpMode {
             Log.i("[phoenix]", String.format("distanceImage (before loop) = %10.2f", d));
 
             Boolean tooCloseToObstacle = false;
+            int distanceLimit = 8;
             double distanceToObstacle = getObstacleDistance();
-            if (distanceToObstacle < 5 && distanceToObstacle > 0)
+            if (distanceToObstacle < distanceLimit && distanceToObstacle > 0)
                 tooCloseToObstacle = true;
 
             while ((Math.abs(d) >= stopDistance) && !tooCloseToObstacle && (imageListener.isVisible()) && opMode.opModeIsActive()) {
@@ -592,7 +593,7 @@ public abstract class AutoBase extends LinearOpMode {
                 //                Log.i("[phoenix:StrafeToImage]", String.format("adj x=%f, y=%f, z=%f, flTurnAdjust=%f, blTurnAdjust=%f", adjustedOrientation.firstAngle, adjustedOrientation.secondAngle, adjustedOrientation.thirdAngle, flTurnAdjust, blTurnAdjust));
                 opMode.telemetry.update();
 
-                if (distanceToObstacle < 5 && distanceToObstacle > 0)
+                if (distanceToObstacle < distanceLimit && distanceToObstacle > 0)
                     tooCloseToObstacle = true;
             }
 
@@ -606,7 +607,7 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     public boolean detectSkystoneByColor() {
-        if (colorSensor.red() < 120) {
+        if (colorSensor.red() < 140) {
             telemetry.addData("gotred:", "oh yes");
             return true;
         }

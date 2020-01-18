@@ -20,18 +20,18 @@ public class AutoBlueLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.4F, 8F, Direction.RIGHT);
+        Strafe(0.4F, 7F, Direction.RIGHT);
 
         sleep(600);
 
         resetAllEncoders();
 
-        if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
+        if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8)) {
             Drive(0.2F, 8F, Direction.BACKWARD);
 
             resetAllEncoders();
             sleep(600);
-            if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8, 8, primaryAngle)) {
+            if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8)) {
                 Drive(0.2F, 6F, Direction.FORWARD);
                 StrafeUntilDistance(0.3F, Direction.RIGHT, 5, primaryAngle, imu);
 
@@ -83,7 +83,7 @@ public class AutoBlueLoad extends AutoBase {
 
         if(lastKnownPosition.translation != null)
             distanceZ = (distanceZ + (Math.abs(lastKnownPosition.translation.get(2)) / 25.4f - 3f)) * (float)Math.sqrt(2);
-        Drive(0.2F, distanceZ, Direction.FORWARD);
+        Drive(0.2F, distanceZ - 2, Direction.FORWARD);
 
         sleep(300);
         intakeMotorLeft.setPower(0);

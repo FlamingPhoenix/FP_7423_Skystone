@@ -11,8 +11,6 @@ public class AutoRedBuild extends AutoBase {
         initialize();
         waitForStart();
 
-        Drive(0.2F, 5, Direction.FORWARD);
-        Strafe(0.45F, 3, Direction.LEFT);
-
+        Drive(0.2F, 10, Direction.FORWARD);
     }
 }
