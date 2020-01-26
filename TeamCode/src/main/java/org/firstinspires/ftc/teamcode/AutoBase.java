@@ -91,7 +91,7 @@ public abstract class AutoBase extends LinearOpMode {
         imu.initialize(new BNO055IMU.Parameters());
 
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
-        backLeftDistanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor2");
+        backLeftDistanceSensor = hardwareMap.get(DistanceSensor.class, "backLeftDistanceSensor");
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
 
         intakeMotorLeft = hardwareMap.dcMotor.get("intaketh1");

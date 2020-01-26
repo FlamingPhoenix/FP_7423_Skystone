@@ -7,12 +7,15 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name = "TeleOp", group = "none")
 public class MyTele extends OpMode {
@@ -26,8 +29,27 @@ public class MyTele extends OpMode {
     Servo pullerLeft;
     Servo pullerRight;
 
+    DistanceSensor backLeftDistanceSensor;
+    DistanceSensor backRightDistanceSensor;
+    long lastSampleTime;
+    long currentSampleTime;
+
+    double approachingSpeed;
+
+    double lastDistanceLeft;
+    double lastDistanceRight;
 
     public void drive(float x1, float y1, float x2) {
+        if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 4 && backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 4) {
+            x1 /= 5;
+            y1 /= 5;
+            x2 /= 5;
+        }
+
+//        if (approachingSpeed > X) {
+//
+//        }
+
         float frontLeft = y1 + x1 + x2;
         float frontRight = y1 - x1 - x2;
         float backLeft = y1 - x1 + x2;
@@ -77,15 +99,35 @@ public class MyTele extends OpMode {
 
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        backLeftDistanceSensor = hardwareMap.get(DistanceSensor.class, "backLeftDistanceSensor");
+        backRightDistanceSensor = hardwareMap.get(DistanceSensor.class, "backRightDistanceSensor");
+
+        lastSampleTime = System.currentTimeMillis();
+        lastDistanceLeft = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
     }
 
     @Override
     public void loop() {
+        currentSampleTime = System.currentTimeMillis();
+        if (currentSampleTime - lastSampleTime > 100) {
+            double approachingSpeedLeft = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceLeft) / (currentSampleTime - lastSampleTime);
+            double approachingSpeedRight = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceRight) / (currentSampleTime - lastSampleTime);
+            telemetry.addData("approachingSpeedLeft: ", "%f", approachingSpeedLeft);
+            telemetry.addData("approachingSpeedRight: ", "%f", approachingSpeedRight);
+            telemetry.update();
+
+           if (Math.abs(approachingSpeedLeft - approachingSpeedRight) < 2) {
+                approachingSpeed = approachingSpeedLeft;
+           }
+            lastSampleTime = currentSampleTime;
+        }
 
         x1 = gamepad1.left_stick_x;
         y1 = gamepad1.left_stick_y;
         x2 = gamepad1.right_stick_x;
         y2 = gamepad1.right_stick_y;
+
         double joystickLeftDistance = Math.pow(x1, 2) + Math.pow(y1, 2);
         if (joystickLeftDistance < 0.9)
         {
