@@ -26,6 +26,8 @@ public class MyTele extends OpMode {
     float x1, x2, y1, y2;
     DcMotor intakeMotorLeft;
     DcMotor intakeMotorRight;
+    DcMotor slideMotorLeft;
+    DcMotor slideMotorRight;
     Servo pullerLeft;
     Servo pullerRight;
 
@@ -82,6 +84,17 @@ public class MyTele extends OpMode {
         intakeMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        slideMotorLeft = hardwareMap.dcMotor.get("slideMotorLeft");
+        slideMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        slideMotorRight = hardwareMap.dcMotor.get("slideMotorRight");
+        slideMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        slideMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        slideMotorRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         pullerLeft = hardwareMap.servo.get("pullerLeft");
         ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
@@ -167,6 +180,9 @@ public class MyTele extends OpMode {
             pullerLeft.setPosition(1);
             pullerRight.setPosition(1);
         }
+
+        slideMotorLeft.setPower(gamepad2.left_stick_y);
+        slideMotorRight.setPower(gamepad2.left_stick_y);
     }
 }
 

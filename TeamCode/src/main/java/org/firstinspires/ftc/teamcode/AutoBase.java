@@ -67,6 +67,9 @@ public abstract class AutoBase extends LinearOpMode {
     DcMotor intakeMotorLeft;
     DcMotor intakeMotorRight;
 
+    DcMotor slideMotorLeft;
+    DcMotor slideMotorRight;
+
     protected PositionToImage lastKnownPosition;
 
     public ImageNavigation imageNavigation;
@@ -103,6 +106,14 @@ public abstract class AutoBase extends LinearOpMode {
         intakeMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         intakeMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        slideMotorLeft = hardwareMap.dcMotor.get("slideMotorLeft");
+        slideMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        slideMotorRight = hardwareMap.dcMotor.get("slideMotorRight");
+        slideMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         primaryAngle = (int)imu.myIMU.getAngularOrientation().firstAngle;
 
