@@ -15,7 +15,7 @@ public class AutoRedLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.5F, 8F, Direction.RIGHT);
+        Strafe(0.5F, 6F, Direction.RIGHT);
 
         sleep(700);
 
@@ -102,13 +102,13 @@ public class AutoRedLoad extends AutoBase {
         Log.i("[phoenix:skystonePos]", String.format("skystonePosition=%d", skystonePosition));
         sleep(100);
         double distanceToBuildZone = 22 + 8 * (skystonePosition - 1); // CHANGED FROM 50 BECAUSE OF BRANDON
-        Drive(0.5F, (float)distanceToBuildZone, Direction.FORWARD);
+        Drive(0.5F, (float)distanceToBuildZone + 2, Direction.FORWARD);
 
         releaseStone();
 
         sleep(100);
 
-        Drive(0.5F, 45F, Direction.BACKWARD);
+        Drive(0.5F, 47F, Direction.BACKWARD);
 
         sleep(50);
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
@@ -136,7 +136,7 @@ public class AutoRedLoad extends AutoBase {
         }
         sleep(100);
 
-        Turn(0.4f, 135, Direction.COUNTERCLOCKWISE, imu, this);
+        Turn(0.4f, 150, Direction.COUNTERCLOCKWISE, imu, this);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
 
@@ -156,7 +156,7 @@ public class AutoRedLoad extends AutoBase {
 
         Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
-        distanceToBuildZone = (33 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
+        distanceToBuildZone = (28 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
         Drive(0.5F, (float)distanceToBuildZone, Direction.BACKWARD);
         Turn(0.2f, 90, Direction.CLOCKWISE, imu, this);
 

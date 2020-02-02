@@ -21,7 +21,7 @@ public class AutoBlueLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.4F, 7F, Direction.RIGHT);
+        Strafe(0.4F, 5F, Direction.RIGHT);
 
         sleep(600);
 
@@ -90,7 +90,7 @@ public class AutoBlueLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        Drive(0.8F, distanceZ, Direction.BACKWARD);
+        Drive(0.8F, distanceZ - 2, Direction.BACKWARD);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
 

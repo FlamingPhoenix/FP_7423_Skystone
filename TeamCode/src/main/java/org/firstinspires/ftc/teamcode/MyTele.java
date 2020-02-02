@@ -31,6 +31,9 @@ public class MyTele extends OpMode {
     Servo pullerLeft;
     Servo pullerRight;
 
+    Servo wrist;
+    Servo finger;
+
     DistanceSensor backLeftDistanceSensor;
     DistanceSensor backRightDistanceSensor;
     long lastSampleTime;
@@ -110,6 +113,20 @@ public class MyTele extends OpMode {
         pullerRightController.setServoPwmRange(pullerRightServoPort, pullerRightPwmRange);
         pullerRight.setPosition(0);
 
+        wrist = hardwareMap.servo.get("wrist");
+        ServoControllerEx wristController = (ServoControllerEx) wrist.getController();
+        int wristServoPort = wrist.getPortNumber();
+        PwmControl.PwmRange wristPwmRange = new PwmControl.PwmRange(899, 1475);
+        wristController.setServoPwmRange(wristServoPort, wristPwmRange);
+        wrist.setPosition(0.5);
+
+        finger = hardwareMap.servo.get("finger");
+        ServoControllerEx fingerController = (ServoControllerEx) finger.getController();
+        int fingerServoPort = finger.getPortNumber();
+        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1700);
+        fingerController.setServoPwmRange(fingerServoPort, fingerPwmRange);
+        finger.setPosition(0);
+
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -126,8 +143,8 @@ public class MyTele extends OpMode {
         if (currentSampleTime - lastSampleTime > 100) {
             double approachingSpeedLeft = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceLeft) / (currentSampleTime - lastSampleTime);
             double approachingSpeedRight = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceRight) / (currentSampleTime - lastSampleTime);
-            telemetry.addData("approachingSpeedLeft: ", "%f", approachingSpeedLeft);
-            telemetry.addData("approachingSpeedRight: ", "%f", approachingSpeedRight);
+//            telemetry.addData("approachingSpeedLeft: ", "%f", approachingSpeedLeft);
+//            telemetry.addData("approachingSpeedRight: ", "%f", approachingSpeedRight);
             telemetry.update();
 
            if (Math.abs(approachingSpeedLeft - approachingSpeedRight) < 2) {
@@ -181,8 +198,69 @@ public class MyTele extends OpMode {
             pullerRight.setPosition(1);
         }
 
-        slideMotorLeft.setPower(gamepad2.left_stick_y);
-        slideMotorRight.setPower(gamepad2.left_stick_y);
+        if(gamepad2.right_stick_x > 0.5){
+            if(wrist.getPosition() < 1){
+                wrist.setPosition(wrist.getPosition() + 0.05);
+            }
+        }
+        else if(gamepad2.right_stick_x < -0.5){
+            if(wrist.getPosition() > 0){
+                wrist.setPosition((wrist.getPosition() - 0.05));
+            }
+        }
+
+        if(gamepad2.right_bumper)
+        {
+            finger.setPosition(0);
+        }
+        else if(gamepad2.right_trigger > 0.2)
+        {
+            finger.setPosition(1);
+        }
+
+        if(slideMotorLeft.getCurrentPosition() < -750 && gamepad2.left_stick_y < 0){
+            slideMotorLeft.setPower(0);
+            slideMotorRight.setPower(0);
+        }
+        else if(slideMotorLeft.getCurrentPosition() > 0 && gamepad2.left_stick_y > 0){
+            slideMotorLeft.setPower(0);
+            slideMotorRight.setPower(0);
+        }
+        else if(gamepad2.left_stick_y < 0){
+            if(slideMotorLeft.getCurrentPosition() < slideMotorRight.getCurrentPosition()){
+                slideMotorLeft.setPower(gamepad2.left_stick_y / 2);
+                slideMotorRight.setPower(gamepad2.left_stick_y);
+            }
+            else if(slideMotorRight.getCurrentPosition() < slideMotorLeft.getCurrentPosition()){
+                slideMotorRight.setPower(gamepad2.left_stick_y / 2);
+                slideMotorLeft.setPower(gamepad2.left_stick_y);
+            }
+            else {
+                slideMotorLeft.setPower(gamepad2.left_stick_y);
+                slideMotorRight.setPower(gamepad2.left_stick_y);
+            }
+        }
+        else{
+            if(slideMotorLeft.getCurrentPosition() < slideMotorRight.getCurrentPosition()){
+                slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
+                slideMotorRight.setPower(gamepad2.left_stick_y / 6);
+            }
+            else if(slideMotorRight.getCurrentPosition() < slideMotorLeft.getCurrentPosition()){
+                slideMotorRight.setPower(gamepad2.left_stick_y / 3);
+                slideMotorLeft.setPower(gamepad2.left_stick_y / 6);
+            }
+            else {
+                slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
+                slideMotorRight.setPower(gamepad2.left_stick_y / 3);
+            }
+            slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
+            slideMotorRight.setPower(gamepad2.left_stick_y / 3);
+        }
+
+
+        telemetry.addData("Slides: ", String.format("left: %5d, right: %5d", slideMotorLeft.getCurrentPosition(), slideMotorRight.getCurrentPosition()));
+        telemetry.update();
+
     }
 }
 

@@ -619,16 +619,11 @@ public abstract class AutoBase extends LinearOpMode {
 
     public boolean detectSkystoneByColor() {
 
-//        if(colorSensor.green() > _____ && colorSensor.blue() > ______)
-//            return false;
-//
-//        else
-//            return true;
-        if (colorSensor.red() < 140) {
-            telemetry.addData("gotred:", "oh yes");
+        if (colorSensor.green() < 400) {
+            telemetry.addData("gotgreen:", "oh yes");
             return true;
         }
-        telemetry.addData("gotred:", "not really");
+        telemetry.addData("gotgreen:", "not really");
         return false;
     }
 
@@ -770,6 +765,8 @@ public abstract class AutoBase extends LinearOpMode {
     public void releaseStone(){
         intakeMotorLeft.setPower(-1);
         intakeMotorRight.setPower(-1);
+
+
 
         this.sleep(300);
 
