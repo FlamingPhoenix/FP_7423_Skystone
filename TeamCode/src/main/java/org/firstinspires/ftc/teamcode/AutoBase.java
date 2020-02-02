@@ -457,7 +457,7 @@ public abstract class AutoBase extends LinearOpMode {
                 currentAngle = imu.getAngularOrientation().firstAngle;
                 AngularVelocity v = imu.getAngularVelocity();
                 float speed = Math.abs(v.xRotationRate);
-                stoppingAngle = Math.abs((0.3f * speed) - 7f);
+                stoppingAngle = Math.abs((0.25f * speed) - 7f);
                 Log.i("[phoenix:turnTest]", String.format("StartingAngle=%f, CurrentAngle=%f, AngularVelocity=%f, StoppingAngle=%f", startOrientation.firstAngle, currentAngle, speed, stoppingAngle));
 
                 fl.setPower(-(actualPower));
@@ -480,7 +480,7 @@ public abstract class AutoBase extends LinearOpMode {
                 currentAngle = imu.getAngularOrientation().firstAngle;
                 AngularVelocity v = imu.getAngularVelocity();
                 float speed = Math.abs(v.xRotationRate);
-                stoppingAngle = Math.abs((0.2648f * speed) - 7f); //-8.5609
+                stoppingAngle = Math.abs((0.25f * speed) - 7f); //-8.5609
 
                 fl.setPower(-(actualPower));
                 fr.setPower(actualPower);
@@ -766,14 +766,10 @@ public abstract class AutoBase extends LinearOpMode {
         intakeMotorLeft.setPower(-1);
         intakeMotorRight.setPower(-1);
 
-        Drive(0.3F, 5, Direction.BACKWARD);
-
         this.sleep(300);
 
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
-
-        Drive(0.3F, 5, Direction.FORWARD);
 
     }
 }

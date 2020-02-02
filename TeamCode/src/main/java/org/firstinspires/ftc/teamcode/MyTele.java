@@ -37,22 +37,22 @@ public class MyTele extends OpMode {
 
     DistanceSensor backLeftDistanceSensor;
     DistanceSensor backRightDistanceSensor;
-    long lastSampleTime;
-    long currentSampleTime;
-
-    double approachingSpeed;
-
-    double lastDistanceLeft;
-    double lastDistanceRight;
+//    long lastSampleTime;
+//    long currentSampleTime;
+//
+//    double approachingSpeed;
+//
+//    double lastDistanceLeft;
+//    double lastDistanceRight;
 
     boolean isGrabbingStone = false;
 
     public void drive(float x1, float y1, float x2) {
-        if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 4 && backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 4) {
-            x1 /= 5;
-            y1 /= 5;
-            x2 /= 5;
-        }
+//        if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 4 && backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 4) {
+//            x1 /= 5;
+//            y1 /= 5;
+//            x2 /= 5;
+//        }
 
 //        if (approachingSpeed > X) {
 //
@@ -143,25 +143,25 @@ public class MyTele extends OpMode {
         backLeftDistanceSensor = hardwareMap.get(DistanceSensor.class, "backLeftDistanceSensor");
         backRightDistanceSensor = hardwareMap.get(DistanceSensor.class, "backRightDistanceSensor");
 
-        lastSampleTime = System.currentTimeMillis();
-        lastDistanceLeft = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
+//        lastSampleTime = System.currentTimeMillis();
+//        lastDistanceLeft = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
     }
 
     @Override
     public void loop() {
-        currentSampleTime = System.currentTimeMillis();
-        if (currentSampleTime - lastSampleTime > 100) {
-            double approachingSpeedLeft = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceLeft) / (currentSampleTime - lastSampleTime);
-            double approachingSpeedRight = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceRight) / (currentSampleTime - lastSampleTime);
+//        currentSampleTime = System.currentTimeMillis();
+//        if (currentSampleTime - lastSampleTime > 100) {
+//            double approachingSpeedLeft = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceLeft) / (currentSampleTime - lastSampleTime);
+//            double approachingSpeedRight = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceRight) / (currentSampleTime - lastSampleTime);
 //            telemetry.addData("approachingSpeedLeft: ", "%f", approachingSpeedLeft);
 //            telemetry.addData("approachingSpeedRight: ", "%f", approachingSpeedRight);
-            telemetry.update();
-
-           if (Math.abs(approachingSpeedLeft - approachingSpeedRight) < 2) {
-                approachingSpeed = approachingSpeedLeft;
-           }
-            lastSampleTime = currentSampleTime;
-        }
+//            telemetry.update();
+//
+//           if (Math.abs(approachingSpeedLeft - approachingSpeedRight) < 2) {
+//                approachingSpeed = approachingSpeedLeft;
+//           }
+//            lastSampleTime = currentSampleTime;
+//        }
 
         x1 = gamepad1.left_stick_x;
         y1 = gamepad1.left_stick_y;
@@ -250,7 +250,7 @@ public class MyTele extends OpMode {
                 slideMotorRight.setPower(gamepad2.left_stick_y);
             }
         }
-        else{
+        else if(!isGrabbingStone){
             if(slideMotorLeft.getCurrentPosition() < slideMotorRight.getCurrentPosition()){
                 slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
                 slideMotorRight.setPower(gamepad2.left_stick_y / 6);
@@ -267,32 +267,42 @@ public class MyTele extends OpMode {
             slideMotorRight.setPower(gamepad2.left_stick_y / 3);
         }
 
-        if(gamepad2.a){
-            isGrabbingStone = true;
-            wrist.setPosition(0.5);
-            shoulder.setPosition(0);
-            if(slideMotorLeft.getCurrentPosition() < 0){
-                slideMotorRight.setPower(-0.2);
-                slideMotorLeft.setPower(-0.2);
-            }
-            else{
-                slideMotorRight.setPower(0);
-                slideMotorLeft.setPower(0);
+//        if(gamepad2.a){
+//            isGrabbingStone = true;
+//            wrist.setPosition(0.5);
+//            shoulder.setPosition(0);
+//            if(slideMotorLeft.getCurrentPosition() < 0){
+//                slideMotorRight.setPower(-0.2);
+//                slideMotorLeft.setPower(-0.2);
+//            }
+//            else{
+//                slideMotorRight.setPower(0);
+//                slideMotorLeft.setPower(0);
+//            }
+//        }
+//        else if(isGrabbingStone){
+//
+//            if(slideMotorLeft.getCurrentPosition() < 0){
+//                slideMotorRight.setPower(-0.2);
+//                slideMotorLeft.setPower(-0.2);
+//            }
+//            else{
+//                slideMotorRight.setPower(0);
+//                slideMotorLeft.setPower(0);
+//                isGrabbingStone = false;
+//            }
+//        }
+
+        if(gamepad2.right_stick_y < -0.3){
+            if(shoulder.getPosition() < 1){
+                shoulder.setPosition(shoulder.getPosition() + 0.05);
             }
         }
-        else if(isGrabbingStone){
-
-            if(slideMotorLeft.getCurrentPosition() < 0){
-                slideMotorRight.setPower(-0.2);
-                slideMotorLeft.setPower(-0.2);
-            }
-            else{
-                slideMotorRight.setPower(0);
-                slideMotorLeft.setPower(0);
-                isGrabbingStone = false;
+        else if(gamepad2.right_stick_y > 0.3){
+            if(shoulder.getPosition() > 0){
+                shoulder.setPosition((shoulder.getPosition() - 0.05));
             }
         }
-
 
         telemetry.addData("Slides: ", String.format("left: %5d, right: %5d", slideMotorLeft.getCurrentPosition(), slideMotorRight.getCurrentPosition()));
         telemetry.update();

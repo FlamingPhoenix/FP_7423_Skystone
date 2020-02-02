@@ -15,25 +15,25 @@ public class AutoRedLoad extends AutoBase {
         initialize();
         waitForStart();
 
-        Strafe(0.5F, 6F, Direction.RIGHT);
+        Strafe(0.7F, 5F, Direction.RIGHT);
 
         sleep(700);
 
         resetAllEncoders();
 
-        if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8)) {
-            Drive(0.2F, 8F, Direction.FORWARD);
+        if (!StrafeToImage(0.55F, imageNavigation.stoneTarget, this, 8)) {
+            Drive(0.4F, 8F, Direction.FORWARD);
 
             resetAllEncoders();
             sleep(600);
-            if (!StrafeToImage(0.35F, imageNavigation.stoneTarget, this, 8)) {
-                Drive(0.2F, 6F, Direction.BACKWARD);
-                StrafeUntilDistance(0.3F, Direction.RIGHT, 5, primaryAngle, imu);
+            if (!StrafeToImage(0.55F, imageNavigation.stoneTarget, this, 8)) {
+                Drive(0.4F, 6F, Direction.BACKWARD);
+                StrafeUntilDistance(0.5F, Direction.RIGHT, 5, primaryAngle, imu);
 
                 int i = 0;
 
                 while (!detectSkystoneByColor() && i < 2) {
-                    Drive(0.2f, 7, Direction.FORWARD);
+                    Drive(0.4f, 7, Direction.FORWARD);
                     i++;
                     telemetry.update();
                     sleep(350);
@@ -67,9 +67,9 @@ public class AutoRedLoad extends AutoBase {
         telemetry.addData("DistanceX: ", "%f", distanceX);
         telemetry.update();
 
-        Drive(0.2F, distanceX, Direction.BACKWARD);
+        Drive(0.4F, distanceX, Direction.BACKWARD);
         sleep(100);
-        Turn(0.3F, 55, Direction.CLOCKWISE, imu, this);
+        Turn(0.4F, 55, Direction.CLOCKWISE, imu, this);
         sleep(100);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
@@ -94,7 +94,7 @@ public class AutoRedLoad extends AutoBase {
         telemetry.addData("cac result", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
         telemetry.update();
 
-        Turn(0.2F, (int)angleToBuild, Direction.CLOCKWISE, imu, this);
+        Turn(0.4F, (int)angleToBuild, Direction.CLOCKWISE, imu, this);
 
         sleep(100);
 
@@ -102,13 +102,13 @@ public class AutoRedLoad extends AutoBase {
         Log.i("[phoenix:skystonePos]", String.format("skystonePosition=%d", skystonePosition));
         sleep(100);
         double distanceToBuildZone = 22 + 8 * (skystonePosition - 1); // CHANGED FROM 50 BECAUSE OF BRANDON
-        Drive(0.5F, (float)distanceToBuildZone + 2, Direction.FORWARD);
+        Drive(067F, (float)distanceToBuildZone + 2, Direction.FORWARD);
 
         releaseStone();
 
         sleep(100);
 
-        Drive(0.5F, 47F, Direction.BACKWARD);
+        Drive(0.7F, 47F, Direction.BACKWARD);
 
         sleep(50);
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
@@ -127,25 +127,25 @@ public class AutoRedLoad extends AutoBase {
             Log.i("[phoenix:nav]", String.format("dx=%f10.2; dy=%f10.2", dx, dy));
 
             if (dx > 1)
-                Drive(0.2f, (float) Math.abs(dx), Direction.FORWARD);
+                Drive(0.4f, (float) Math.abs(dx), Direction.FORWARD);
             else if (dx < -1)
-                Drive(0.2f, (float) Math.abs(dx), Direction.BACKWARD);
+                Drive(0.4f, (float) Math.abs(dx), Direction.BACKWARD);
 
         } else {
             Log.i("[phoenix:nav]", "Can't see Image");
         }
         sleep(100);
 
-        Turn(0.4f, 150, Direction.COUNTERCLOCKWISE, imu, this);
+        Turn(0.5f, 150, Direction.COUNTERCLOCKWISE, imu, this);
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
 
-        Drive(0.3f, (float) Math.abs(dy)* (float) Math.sqrt(2), Direction.FORWARD);
+        Drive(0.5f, (float) Math.abs(dy)* (float) Math.sqrt(2), Direction.FORWARD);
         sleep(100);
         intakeMotorRight.setPower(0);
         intakeMotorLeft.setPower(0);
         float angleToStone = Math.abs((180 - Math.abs(imu.getAngularOrientation().firstAngle)));
-        Drive(0.5f, 12/(float)Math.sin(Math.toRadians(angleToStone)), Direction.BACKWARD);
+        Drive(0.7f, 12/(float)Math.sin(Math.toRadians(angleToStone)), Direction.BACKWARD);
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
         angleToBuild = Math.abs(primaryAngle + imu.getAngularOrientation().firstAngle);
@@ -154,14 +154,14 @@ public class AutoRedLoad extends AutoBase {
         telemetry.addData("cac result", String.format("primary = %d; angleToBuild = %f10.2", primaryAngle, angleToBuild ));
         telemetry.update();
 
-        Turn(0.2F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
+        Turn(0.4F, (int)angleToBuild, Direction.COUNTERCLOCKWISE, imu, this);
 
         distanceToBuildZone = (28 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
-        Drive(0.5F, (float)distanceToBuildZone, Direction.BACKWARD);
-        Turn(0.2f, 90, Direction.CLOCKWISE, imu, this);
+        Drive(0.7F, (float)distanceToBuildZone, Direction.BACKWARD);
+        Turn(0.4f, 90, Direction.CLOCKWISE, imu, this);
 
         releaseStone();
 
-        Strafe(0.5f, 10, Direction.LEFT);
+        Strafe(0.7f, 10, Direction.LEFT);
     }
 }
