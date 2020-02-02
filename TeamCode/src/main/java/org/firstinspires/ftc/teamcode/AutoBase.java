@@ -766,12 +766,15 @@ public abstract class AutoBase extends LinearOpMode {
         intakeMotorLeft.setPower(-1);
         intakeMotorRight.setPower(-1);
 
-
+        Drive(0.3F, 5, Direction.BACKWARD);
 
         this.sleep(300);
 
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
+
+        Drive(0.3F, 5, Direction.FORWARD);
+
     }
 }
 

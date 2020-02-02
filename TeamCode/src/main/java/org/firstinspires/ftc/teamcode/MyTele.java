@@ -33,6 +33,7 @@ public class MyTele extends OpMode {
 
     Servo wrist;
     Servo finger;
+    Servo shoulder;
 
     DistanceSensor backLeftDistanceSensor;
     DistanceSensor backRightDistanceSensor;
@@ -43,6 +44,8 @@ public class MyTele extends OpMode {
 
     double lastDistanceLeft;
     double lastDistanceRight;
+
+    boolean isGrabbingStone = false;
 
     public void drive(float x1, float y1, float x2) {
         if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 4 && backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 4) {
@@ -126,6 +129,13 @@ public class MyTele extends OpMode {
         PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1700);
         fingerController.setServoPwmRange(fingerServoPort, fingerPwmRange);
         finger.setPosition(0);
+
+        shoulder = hardwareMap.servo.get("shoulder");
+        ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
+        int shoulderServoPort = shoulder.getPortNumber();
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1085, 2000);
+        shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
+        shoulder.setPosition(0);
 
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -255,6 +265,32 @@ public class MyTele extends OpMode {
             }
             slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
             slideMotorRight.setPower(gamepad2.left_stick_y / 3);
+        }
+
+        if(gamepad2.a){
+            isGrabbingStone = true;
+            wrist.setPosition(0.5);
+            shoulder.setPosition(0);
+            if(slideMotorLeft.getCurrentPosition() < 0){
+                slideMotorRight.setPower(-0.2);
+                slideMotorLeft.setPower(-0.2);
+            }
+            else{
+                slideMotorRight.setPower(0);
+                slideMotorLeft.setPower(0);
+            }
+        }
+        else if(isGrabbingStone){
+
+            if(slideMotorLeft.getCurrentPosition() < 0){
+                slideMotorRight.setPower(-0.2);
+                slideMotorLeft.setPower(-0.2);
+            }
+            else{
+                slideMotorRight.setPower(0);
+                slideMotorLeft.setPower(0);
+                isGrabbingStone = false;
+            }
         }
 
 
