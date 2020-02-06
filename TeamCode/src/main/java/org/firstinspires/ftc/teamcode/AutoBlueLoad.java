@@ -120,6 +120,8 @@ public class AutoBlueLoad extends AutoBase {
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
         VectorF vector = coordinates.getTranslation();
 
+        //
+
         double dy = 8;
 
         double d = 4 + (skystonePosition - 1) * 8;
