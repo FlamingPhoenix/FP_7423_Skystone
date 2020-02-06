@@ -122,7 +122,11 @@ public class AutoBlueLoad extends AutoBase {
 
         double dy = 8;
 
+        double d = 4 + (skystonePosition - 1) * 8;
+
         double skystoneY = 48 + (skystonePosition - 1) * 8;
+
+        int angleToSkystone = 45;
 
         if (coordinates != null) {
             Log.i("[phoenix:nav]", String.format("x=%f10.2; y=%f10.2; z=%f10.2", vector.get(0), vector.get(1), vector.get(2)));
@@ -132,22 +136,29 @@ public class AutoBlueLoad extends AutoBase {
 
             Log.i("[phoenix:nav]", String.format("dx=%f10.2; dy=%f10.2", dx, dy));
 
-            if (dx > 1)
-                Drive(0.4f, (float) Math.abs(dx), Direction.BACKWARD);
-            else if (dx < -1)
-                Drive(0.4f, (float) Math.abs(dx), Direction.FORWARD);
+            angleToSkystone = (int)Math.atan(d / dy);
 
+            if(angleToSkystone > 60){
+                if (dx > 1)
+                    Drive(0.4f, (float) dx, Direction.BACKWARD);
+                else if (dx < -1)
+                    Drive(0.4f, (float) -dx, Direction.FORWARD);
+                angleToSkystone = 45;
+            }
         }
         else {
             Log.i("[phoenix:nav]", "Can't see Image");
         }
         sleep(100);
 
-        Turn(0.4f, 45, Direction.COUNTERCLOCKWISE, imu, this);
+        int driveDistance = (int)Math.abs(Math.sqrt(d * d + dy * dy));
+
+        Turn(0.4f, angleToSkystone, Direction.COUNTERCLOCKWISE, imu, this);
+
         intakeMotorLeft.setPower(1);
         intakeMotorRight.setPower(1);
 
-        Drive(0.5f, (float) Math.abs(dy)* (float) Math.sqrt(2), Direction.FORWARD);
+        Drive(0.5f, driveDistance, Direction.FORWARD);
         sleep(300);
         intakeMotorRight.setPower(0);
         intakeMotorLeft.setPower(0);
