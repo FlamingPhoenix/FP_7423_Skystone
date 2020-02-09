@@ -120,9 +120,8 @@ public class AutoBlueLoad extends AutoBase {
         OpenGLMatrix coordinates = imageNavigation.getRobotLocation();
         VectorF vector = coordinates.getTranslation();
 
-        //
-
         double dy = 8;
+        double dx = 0;
 
         double d = 4 + (skystonePosition - 1) * 8;
 
@@ -134,13 +133,16 @@ public class AutoBlueLoad extends AutoBase {
             Log.i("[phoenix:nav]", String.format("x=%f10.2; y=%f10.2; z=%f10.2", vector.get(0), vector.get(1), vector.get(2)));
 
             dy = (Math.abs(vector.get(1) / 25.4) - 24) - 7; // distance between robot and stone
-            double dx = Math.abs(vector.get(0) / 25.4) - (skystoneY - dy);
+            dx = Math.abs(vector.get(0) / 25.4) - (skystoneY - dy);
 
             Log.i("[phoenix:nav]", String.format("dx=%f10.2; dy=%f10.2", dx, dy));
 
-            angleToSkystone = (int)Math.atan(d / dy);
+            angleToSkystone = (int) Math.atan(d / dy);
 
-            if(angleToSkystone > 60){
+            if (skystonePosition == 3)
+                dx -= 4;
+
+            else if (angleToSkystone > 60) {
                 if (dx > 1)
                     Drive(0.4f, (float) dx, Direction.BACKWARD);
                 else if (dx < -1)
@@ -152,21 +154,34 @@ public class AutoBlueLoad extends AutoBase {
             Log.i("[phoenix:nav]", "Can't see Image");
         }
         sleep(100);
+        float angleToStone = 0;
+        if (skystonePosition == 3) {
+            Drive(0.4f, (float) -dx, Direction.FORWARD);
+            Strafe(0.5f, (float) dy, Direction.LEFT);
+            intakeMotorLeft.setPower(1);
+            intakeMotorRight.setPower(1);
+            Drive(0.5f, 16, Direction.FORWARD);
+            sleep(300);
+            intakeMotorRight.setPower(0);
+            intakeMotorLeft.setPower(0);
+            Strafe(0.5f, (float) dy, Direction.RIGHT);
+        }
+        else {
+            int driveDistance = (int) Math.abs(Math.sqrt(d * d + dy * dy));
 
-        int driveDistance = (int)Math.abs(Math.sqrt(d * d + dy * dy));
+            Turn(0.4f, angleToSkystone, Direction.COUNTERCLOCKWISE, imu, this);
 
-        Turn(0.4f, angleToSkystone, Direction.COUNTERCLOCKWISE, imu, this);
+            intakeMotorLeft.setPower(1);
+            intakeMotorRight.setPower(1);
 
-        intakeMotorLeft.setPower(1);
-        intakeMotorRight.setPower(1);
-
-        Drive(0.5f, driveDistance, Direction.FORWARD);
-        sleep(300);
-        intakeMotorRight.setPower(0);
-        intakeMotorLeft.setPower(0);
-        float angleToStone = Math.abs((180 - Math.abs(imu.getAngularOrientation().firstAngle)));
-        Log.i("[phoenix]", String.format("angleToStone = %f10.2", angleToStone));
-        Drive(0.7f, 12/(float)Math.sin(Math.toRadians(angleToStone)), Direction.BACKWARD);
+            Drive(0.5f, driveDistance, Direction.FORWARD);
+            sleep(300);
+            intakeMotorRight.setPower(0);
+            intakeMotorLeft.setPower(0);
+            angleToStone = Math.abs((180 - Math.abs(imu.getAngularOrientation().firstAngle)));
+            Log.i("[phoenix]", String.format("angleToStone = %f10.2", angleToStone));
+            Drive(0.7f, 12 / (float) Math.sin(Math.toRadians(angleToStone)), Direction.BACKWARD);
+        }
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
         angleToBuild = primaryAngle + imu.getAngularOrientation().firstAngle;
@@ -177,7 +192,7 @@ public class AutoBlueLoad extends AutoBase {
 
         Turn(0.4F, 180 + (int)angleToBuild, Direction.CLOCKWISE, imu, this);
 
-        distanceToBuildZone = (48 + (skystonePosition -1) * 8) + 12 - 12/Math.tan(Math.toRadians(angleToStone));
+        distanceToBuildZone = (48 + (skystonePosition - 1) * 8) + 12 - 12 / Math.tan(Math.toRadians(angleToStone));
         Drive(0.7F, (float)distanceToBuildZone, Direction.BACKWARD);
         Turn(0.4f, 90, Direction.COUNTERCLOCKWISE, imu, this);
 
