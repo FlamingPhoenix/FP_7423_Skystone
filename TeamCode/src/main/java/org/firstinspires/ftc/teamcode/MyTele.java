@@ -179,6 +179,11 @@ public class MyTele extends OpMode {
         {
             x2 = x2/2;
         }
+        if (gamepad1.left_trigger > 0.5){
+            x1 = x1/3;
+            y1 = y1/3;
+            x2 = x2/3;
+        }
         drive(x1,  y1 * -1, x2);
 
         if (gamepad1.right_trigger > 0.2) //in
@@ -308,5 +313,10 @@ public class MyTele extends OpMode {
         telemetry.update();
 
     }
+
+    public void moveArm(){
+
+    }
 }
+
 
