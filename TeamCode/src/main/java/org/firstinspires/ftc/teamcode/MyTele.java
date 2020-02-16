@@ -48,15 +48,6 @@ public class MyTele extends OpMode {
     boolean isGrabbingStone = false;
 
     public void drive(float x1, float y1, float x2) {
-//        if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 4 && backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 4) {
-//            x1 /= 5;
-//            y1 /= 5;
-//            x2 /= 5;
-//        }
-
-//        if (approachingSpeed > X) {
-//
-//        }
 
         float frontLeft = y1 + x1 + x2;
         float frontRight = y1 - x1 - x2;
@@ -67,6 +58,18 @@ public class MyTele extends OpMode {
         frontRight = Range.clip(frontRight, -1, 1);
         backLeft = Range.clip(backLeft, -1, 1);
         backRight = Range.clip(backRight, -1, 1);
+
+        if(gamepad1.left_trigger > 0.5){
+            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backLeft < 0 && frontLeft < 0){
+                backLeft = 0;
+                frontLeft = 0;
+            }
+
+            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backRight < 0 && frontRight < 0){
+                backRight = 0;
+                frontRight = 0;
+            }
+        }
 
         fl.setPower(frontLeft);
         fr.setPower(frontRight);
@@ -179,7 +182,7 @@ public class MyTele extends OpMode {
         {
             x2 = x2/2;
         }
-        if (gamepad1.left_trigger > 0.5){
+        if (gamepad1.left_trigger > 0.5){//reduces power by 3 to prepare for slow foundation thing dab dab dab dab dab dab dab dab dab dab dab dab dab dab dab
             x1 = x1/3;
             y1 = y1/3;
             x2 = x2/3;
