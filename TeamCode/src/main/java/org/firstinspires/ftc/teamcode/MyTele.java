@@ -60,7 +60,7 @@ public class MyTele extends OpMode {
         backRight = Range.clip(backRight, -1, 1);
 
         if(gamepad1.left_trigger > 0.5){
-            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backLeft < 0 && frontLeft < 0){
+            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backLeft < 0 && frontLeft < 0){//stops wheels to make robot parallel to foundation
                 backLeft = 0;
                 frontLeft = 0;
             }
@@ -182,8 +182,8 @@ public class MyTele extends OpMode {
         {
             x2 = x2/2;
         }
-        if (gamepad1.left_trigger > 0.5){//reduces power by 3 to prepare for slow foundation thing dab dab dab dab dab dab dab dab dab dab dab dab dab dab dab
-            x1 = x1/3;
+        if (gamepad1.left_trigger > 0.5){//reduces power by 3 to prepare slowing down in front of foundation
+            x1 = x1/3;//reduce by 3 for now
             y1 = y1/3;
             x2 = x2/3;
         }
