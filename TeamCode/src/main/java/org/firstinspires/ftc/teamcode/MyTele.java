@@ -65,7 +65,7 @@ public class MyTele extends OpMode {
                 frontLeft = 0;
             }
 
-            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backRight < 0 && frontRight < 0){
+            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backRight < 0 && frontRight < 0){//same for right side
                 backRight = 0;
                 frontRight = 0;
             }
