@@ -129,14 +129,14 @@ public class MyTele extends OpMode {
         finger = hardwareMap.servo.get("finger");
         ServoControllerEx fingerController = (ServoControllerEx) finger.getController();
         int fingerServoPort = finger.getPortNumber();
-        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1700);
+        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1710);
         fingerController.setServoPwmRange(fingerServoPort, fingerPwmRange);
         finger.setPosition(0);
 
         shoulder = hardwareMap.servo.get("shoulder");
         ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
         int shoulderServoPort = shoulder.getPortNumber();
-        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1085, 2000);
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1650, 2105);
         shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
         shoulder.setPosition(0);
 
@@ -216,90 +216,58 @@ public class MyTele extends OpMode {
             pullerRight.setPosition(1);
         }
 
-        if(gamepad2.right_stick_x > 0.5){
-            if(wrist.getPosition() < 1){
-                wrist.setPosition(wrist.getPosition() + 0.05);
-            }
+        if (gamepad2.x) {
+            shoulder.setPosition(1);
         }
-        else if(gamepad2.right_stick_x < -0.5){
-            if(wrist.getPosition() > 0){
-                wrist.setPosition((wrist.getPosition() - 0.05));
-            }
-        }
+        grabStone();
+        stackStone();
+        moveArm();
 
-        if(gamepad2.right_bumper)
-        {
-            finger.setPosition(0);
-        }
-        else if(gamepad2.right_trigger > 0.2)
-        {
-            finger.setPosition(1);
-        }
+        telemetry.update();
+    }
 
-        if(slideMotorLeft.getCurrentPosition() < -750 && gamepad2.left_stick_y < 0){
-            slideMotorLeft.setPower(0);
-            slideMotorRight.setPower(0);
-        }
-        else if(slideMotorLeft.getCurrentPosition() > 0 && gamepad2.left_stick_y > 0){
-            slideMotorLeft.setPower(0);
-            slideMotorRight.setPower(0);
-        }
-        else if(gamepad2.left_stick_y < 0){
-            if(slideMotorLeft.getCurrentPosition() < slideMotorRight.getCurrentPosition()){
-                slideMotorLeft.setPower(gamepad2.left_stick_y / 2);
-                slideMotorRight.setPower(gamepad2.left_stick_y);
-            }
-            else if(slideMotorRight.getCurrentPosition() < slideMotorLeft.getCurrentPosition()){
-                slideMotorRight.setPower(gamepad2.left_stick_y / 2);
-                slideMotorLeft.setPower(gamepad2.left_stick_y);
-            }
-            else {
-                slideMotorLeft.setPower(gamepad2.left_stick_y);
-                slideMotorRight.setPower(gamepad2.left_stick_y);
-            }
-        }
-        else if(!isGrabbingStone){
-            if(slideMotorLeft.getCurrentPosition() < slideMotorRight.getCurrentPosition()){
-                slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
-                slideMotorRight.setPower(gamepad2.left_stick_y / 6);
-            }
-            else if(slideMotorRight.getCurrentPosition() < slideMotorLeft.getCurrentPosition()){
-                slideMotorRight.setPower(gamepad2.left_stick_y / 3);
-                slideMotorLeft.setPower(gamepad2.left_stick_y / 6);
-            }
-            else {
-                slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
-                slideMotorRight.setPower(gamepad2.left_stick_y / 3);
-            }
-            slideMotorLeft.setPower(gamepad2.left_stick_y / 3);
-            slideMotorRight.setPower(gamepad2.left_stick_y / 3);
-        }
-
-//        if(gamepad2.a){
-//            isGrabbingStone = true;
-//            wrist.setPosition(0.5);
-//            shoulder.setPosition(0);
-//            if(slideMotorLeft.getCurrentPosition() < 0){
-//                slideMotorRight.setPower(-0.2);
-//                slideMotorLeft.setPower(-0.2);
-//            }
-//            else{
-//                slideMotorRight.setPower(0);
-//                slideMotorLeft.setPower(0);
+    public void moveArm(){
+//        if(gamepad2.right_stick_x > 0.5){
+//            if(wrist.getPosition() < 1){
+//                wrist.setPosition(wrist.getPosition() + 0.05);
 //            }
 //        }
-//        else if(isGrabbingStone){
+//        else if(gamepad2.right_stick_x < -0.5){
+//            if(wrist.getPosition() > 0){
+//                wrist.setPosition((wrist.getPosition() - 0.05));
+//            }
+//        }
 //
-//            if(slideMotorLeft.getCurrentPosition() < 0){
-//                slideMotorRight.setPower(-0.2);
-//                slideMotorLeft.setPower(-0.2);
-//            }
-//            else{
-//                slideMotorRight.setPower(0);
-//                slideMotorLeft.setPower(0);
-//                isGrabbingStone = false;
-//            }
+//        if(gamepad2.right_bumper)
+//        {
+//            finger.setPosition(0);
 //        }
+//        else if(gamepad2.right_trigger > 0.2)
+//        {
+//            finger.setPosition(1);
+//        }
+        if(slideMotorLeft.getCurrentPosition() > 0 && gamepad2.left_stick_y > 0){
+            slideMotorLeft.setPower(0);
+            slideMotorRight.setPower(0);
+        }
+        else if(slideMotorLeft.getCurrentPosition() < 900 && gamepad2.left_stick_y < 0){
+            if(slideMotorLeft.getCurrentPosition() < slideMotorRight.getCurrentPosition()){
+                slideMotorLeft.setPower(gamepad2.left_stick_y / 5);
+                slideMotorRight.setPower(gamepad2.left_stick_y);
+            }
+            else if(slideMotorRight.getCurrentPosition() < slideMotorLeft.getCurrentPosition()){
+                slideMotorRight.setPower(gamepad2.left_stick_y / 5);
+                slideMotorLeft.setPower(gamepad2.left_stick_y);
+            }
+            else {
+                slideMotorLeft.setPower(gamepad2.left_stick_y);
+                slideMotorRight.setPower(gamepad2.left_stick_y);
+            }
+        }
+        else if(gamepad2.left_stick_y > 0){
+            slideMotorLeft.setPower(gamepad2.left_stick_y / 1.2);
+            slideMotorRight.setPower(gamepad2.left_stick_y / 1.2);
+        }
 
         if(gamepad2.right_stick_y < -0.3){
             if(shoulder.getPosition() < 1){
@@ -313,13 +281,18 @@ public class MyTele extends OpMode {
         }
 
         telemetry.addData("Slides: ", String.format("left: %5d, right: %5d", slideMotorLeft.getCurrentPosition(), slideMotorRight.getCurrentPosition()));
-        telemetry.update();
-
     }
 
-    public void moveArm(){
+    public void grabStone(){
+        if (gamepad2.right_trigger > 0.2) {
+//            wrist.setPosition(0.05);
+            finger.setPosition(1);
+        }
+    }
 
+    public void stackStone() {
+        if (gamepad2.right_bumper) {
+            finger.setPosition(0);
+        }
     }
 }
-
-
