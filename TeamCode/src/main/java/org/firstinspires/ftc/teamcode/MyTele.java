@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -37,6 +38,11 @@ public class MyTele extends OpMode {
 
     DistanceSensor backLeftDistanceSensor;
     DistanceSensor backRightDistanceSensor;
+
+    TouchSensor touchBack;
+
+    public long tuckStartTime;
+    public boolean isTuckStart = false;
 //    long lastSampleTime;
 //    long currentSampleTime;
 //
@@ -46,6 +52,8 @@ public class MyTele extends OpMode {
 //    double lastDistanceRight;
 
     boolean isGrabbingStone = false;
+
+    public boolean isTouched = false;
 
     public void drive(float x1, float y1, float x2) {
 
@@ -146,6 +154,9 @@ public class MyTele extends OpMode {
         backLeftDistanceSensor = hardwareMap.get(DistanceSensor.class, "backLeftDistanceSensor");
         backRightDistanceSensor = hardwareMap.get(DistanceSensor.class, "backRightDistanceSensor");
 
+        touchBack = hardwareMap.get(TouchSensor.class, "touchSensor");
+
+
 //        lastSampleTime = System.currentTimeMillis();
 //        lastDistanceLeft = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
     }
@@ -193,6 +204,15 @@ public class MyTele extends OpMode {
         {
             intakeMotorLeft.setPower(1);
             intakeMotorRight.setPower(1);
+            //set flippers to open
+            if(slideMotorLeft.getCurrentPosition() > -150){
+                slideMotorLeft.setPower(-0.5);
+                slideMotorRight.setPower(-0.5);
+            }
+            else{
+                slideMotorLeft.setPower(0);
+                slideMotorRight.setPower(0);
+            }
         }
         else if (gamepad1.right_bumper) //out
         {
@@ -223,6 +243,30 @@ public class MyTele extends OpMode {
         stackStone();
         moveArm();
 
+//        if(gamepad2.y || isTuckStart){
+//            tuckArm();
+//        }
+
+        if(touchBack.isPressed() || isTouched){
+            if(!isTouched){
+                wrist.setPosition(0.5);
+                finger.setPosition(1);
+                isTouched = true;
+            }
+            else if(isTouched){
+                if(slideMotorLeft.getCurrentPosition() < 0){
+                    slideMotorLeft.setPower(0.7);
+                    slideMotorRight.setPower(0.7);
+                }
+                else{
+                    slideMotorLeft.setPower(0);
+                    slideMotorRight.setPower(0);
+                    isTouched = false;
+                }
+            }
+
+        }
+
         telemetry.update();
     }
 
@@ -246,6 +290,10 @@ public class MyTele extends OpMode {
 //        {
 //            finger.setPosition(1);
 //        }
+        if(gamepad2.left_stick_y < -0.5 || gamepad2.left_stick_y > 0.5) {
+            isTuckStart = false;
+        }
+
         if(slideMotorLeft.getCurrentPosition() > 0 && gamepad2.left_stick_y > 0){
             slideMotorLeft.setPower(0);
             slideMotorRight.setPower(0);
@@ -293,6 +341,27 @@ public class MyTele extends OpMode {
     public void stackStone() {
         if (gamepad2.right_bumper) {
             finger.setPosition(0);
+        }
+    }
+
+    public void tuckArm(){
+        if(!isTuckStart){
+            tuckStartTime = System.currentTimeMillis();
+            isTuckStart = true;
+            shoulder.setPosition(0);
+        }
+        else if(isTuckStart){
+            if((System.currentTimeMillis() - tuckStartTime) > 2000){
+                if(slideMotorLeft.getCurrentPosition() < 0){
+                    slideMotorLeft.setPower(0.7);
+                    slideMotorRight.setPower(0.7);
+                }
+                else{
+                    slideMotorLeft.setPower(0);
+                    slideMotorRight.setPower(0);
+                    isTuckStart = false;
+                }
+            }
         }
     }
 }
