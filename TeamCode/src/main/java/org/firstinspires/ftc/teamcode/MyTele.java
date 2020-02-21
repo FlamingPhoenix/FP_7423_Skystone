@@ -51,9 +51,8 @@ public class MyTele extends OpMode {
 //    double lastDistanceLeft;
 //    double lastDistanceRight;
 
-    boolean isGrabbingStone = false;
-
-    public boolean isTouched = false;
+    boolean isGrabbing = false;
+    public boolean isGrabbed = true;
 
     public void drive(float x1, float y1, float x2) {
 
@@ -243,28 +242,32 @@ public class MyTele extends OpMode {
         stackStone();
         moveArm();
 
-//        if(gamepad2.y || isTuckStart){
-//            tuckArm();
-//        }
+        if(gamepad2.y || isTuckStart){
+            tuckArm();
+        }
 
-        if(touchBack.isPressed() || isTouched){
-            if(!isTouched){
+        if(touchBack.isPressed() && !isGrabbing && isGrabbed) {
+            isGrabbing = true;
+            isGrabbed = false;
+        }
+        else if (isGrabbing) {
+            if(slideMotorLeft.getCurrentPosition() < 0){
+                slideMotorLeft.setPower(0.7);
+                slideMotorRight.setPower(0.7);
+                finger.setPosition(0);
+            }
+            else{
+                slideMotorLeft.setPower(0);
+                slideMotorRight.setPower(0);
+
                 wrist.setPosition(0.5);
+                shoulder.setPosition(0.1);
                 finger.setPosition(1);
-                isTouched = true;
+                isGrabbing = false;
             }
-            else if(isTouched){
-                if(slideMotorLeft.getCurrentPosition() < 0){
-                    slideMotorLeft.setPower(0.7);
-                    slideMotorRight.setPower(0.7);
-                }
-                else{
-                    slideMotorLeft.setPower(0);
-                    slideMotorRight.setPower(0);
-                    isTouched = false;
-                }
-            }
-
+        }
+        else if (!touchBack.isPressed() && !isGrabbing && !isGrabbed && slideMotorRight.getCurrentPosition() <-200) {
+            isGrabbed = true;
         }
 
         telemetry.update();
@@ -294,41 +297,58 @@ public class MyTele extends OpMode {
             isTuckStart = false;
         }
 
-        if(slideMotorLeft.getCurrentPosition() > 0 && gamepad2.left_stick_y > 0){
+        if(gamepad2.left_stick_y > 0.1) {// The joystick is pointing down
+            if (slideMotorRight.getCurrentPosition() >=0 || slideMotorLeft.getCurrentPosition() >= 0) {
+                //The slide has reached bottom
+                slideMotorLeft.setPower(0);
+                slideMotorRight.setPower(0);
+            }
+            else {
+                slideMotorLeft.setPower(gamepad2.left_stick_y / 1.2); //reduce the downward speed to reduce the slack
+                slideMotorRight.setPower(gamepad2.left_stick_y / 1.2);
+            }
+        }
+        else if(gamepad2.left_stick_y < -0.1){ //joystick is pointing up
+            if (slideMotorRight.getCurrentPosition() <= -900 || slideMotorLeft.getCurrentPosition() <= -900) {
+                //over the high limit
+                slideMotorLeft.setPower(0);
+                slideMotorRight.setPower(0);
+            }
+            else {
+                if ((slideMotorLeft.getCurrentPosition() - slideMotorRight.getCurrentPosition()) < -20){
+                    slideMotorLeft.setPower(gamepad2.left_stick_y / 5);
+                    slideMotorRight.setPower(gamepad2.left_stick_y);
+                }
+                else if ((slideMotorRight.getCurrentPosition() - slideMotorLeft.getCurrentPosition()) < -20){
+                    slideMotorRight.setPower(gamepad2.left_stick_y / 5);
+                    slideMotorLeft.setPower(gamepad2.left_stick_y);
+                }
+                else {
+                    slideMotorLeft.setPower(gamepad2.left_stick_y);
+                    slideMotorRight.setPower(gamepad2.left_stick_y);
+                }
+            }
+        }
+        else {
             slideMotorLeft.setPower(0);
             slideMotorRight.setPower(0);
         }
-        else if(slideMotorLeft.getCurrentPosition() < 900 && gamepad2.left_stick_y < 0){
-            if(slideMotorLeft.getCurrentPosition() < slideMotorRight.getCurrentPosition()){
-                slideMotorLeft.setPower(gamepad2.left_stick_y / 5);
-                slideMotorRight.setPower(gamepad2.left_stick_y);
-            }
-            else if(slideMotorRight.getCurrentPosition() < slideMotorLeft.getCurrentPosition()){
-                slideMotorRight.setPower(gamepad2.left_stick_y / 5);
-                slideMotorLeft.setPower(gamepad2.left_stick_y);
-            }
-            else {
-                slideMotorLeft.setPower(gamepad2.left_stick_y);
-                slideMotorRight.setPower(gamepad2.left_stick_y);
-            }
-        }
-        else if(gamepad2.left_stick_y > 0){
-            slideMotorLeft.setPower(gamepad2.left_stick_y / 1.2);
-            slideMotorRight.setPower(gamepad2.left_stick_y / 1.2);
-        }
 
-        if(gamepad2.right_stick_y < -0.3){
-            if(shoulder.getPosition() < 1){
-                shoulder.setPosition(shoulder.getPosition() + 0.05);
+        if (slideMotorLeft.getCurrentPosition()<-250 && slideMotorRight.getCurrentPosition() <-250) {
+            //baby-proof: shoulder no move if lower than -150
+            if(gamepad2.right_stick_y < -0.3){
+                if(shoulder.getPosition() < 1){
+                    shoulder.setPosition(shoulder.getPosition() + 0.05);
+                }
             }
-        }
-        else if(gamepad2.right_stick_y > 0.3){
-            if(shoulder.getPosition() > 0){
-                shoulder.setPosition((shoulder.getPosition() - 0.05));
+            else if(gamepad2.right_stick_y > 0.3){
+                if(shoulder.getPosition() > 0){
+                    shoulder.setPosition((shoulder.getPosition() - 0.05));
+                }
             }
         }
 
-        telemetry.addData("Slides: ", String.format("left: %5d, right: %5d", slideMotorLeft.getCurrentPosition(), slideMotorRight.getCurrentPosition()));
+        //telemetry.addData("Slides: ", String.format("left: %5d, right: %5d", slideMotorLeft.getCurrentPosition(), slideMotorRight.getCurrentPosition()));
     }
 
     public void grabStone(){
@@ -345,6 +365,7 @@ public class MyTele extends OpMode {
     }
 
     public void tuckArm(){
+        //telemetry.addData("tuckArm: ", String.format("isTuckStart: %5b, tuckStartTime: %5d", isTuckStart, tuckStartTime));
         if(!isTuckStart){
             tuckStartTime = System.currentTimeMillis();
             isTuckStart = true;
