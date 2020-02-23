@@ -52,7 +52,14 @@ public class MyTele extends OpMode {
 //    double lastDistanceRight;
 
     boolean isGrabbing = false;
-    public boolean isGrabbed = true;
+    boolean isGrabbed = true;
+
+    boolean isIntaking = false;
+    long shoulderAdjustingStartTime;
+    boolean isAdjustingShoulder = false;
+    boolean isFerryBot = false;
+
+    long shoulderAdjustingWaitTime = 1000;
 
     public void drive(float x1, float y1, float x2) {
 
@@ -131,19 +138,19 @@ public class MyTele extends OpMode {
         int wristServoPort = wrist.getPortNumber();
         PwmControl.PwmRange wristPwmRange = new PwmControl.PwmRange(899, 1475);
         wristController.setServoPwmRange(wristServoPort, wristPwmRange);
-        wrist.setPosition(0.5);
+        wrist.setPosition(0.45);
 
         finger = hardwareMap.servo.get("finger");
         ServoControllerEx fingerController = (ServoControllerEx) finger.getController();
         int fingerServoPort = finger.getPortNumber();
-        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1710);
+        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1750);
         fingerController.setServoPwmRange(fingerServoPort, fingerPwmRange);
         finger.setPosition(0);
 
         shoulder = hardwareMap.servo.get("shoulder");
         ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
         int shoulderServoPort = shoulder.getPortNumber();
-        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1650, 2105);
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2105);
         shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
         shoulder.setPosition(0);
 
@@ -198,20 +205,33 @@ public class MyTele extends OpMode {
             x2 = x2/3;
         }
         drive(x1,  y1 * -1, x2);
+        if(gamepad1.a){
+            isFerryBot = true;
+        }
+        else if(gamepad1.b){
+            isFerryBot = false;
+        }
 
         if (gamepad1.right_trigger > 0.2) //in
         {
             intakeMotorLeft.setPower(1);
             intakeMotorRight.setPower(1);
+            isIntaking = true;
             //set flippers to open
-            if(slideMotorLeft.getCurrentPosition() > -150){
-                slideMotorLeft.setPower(-0.5);
-                slideMotorRight.setPower(-0.5);
+            if(!isFerryBot){
+                if(slideMotorLeft.getCurrentPosition() > -300){
+                    slideMotorLeft.setPower(-0.5);
+                    slideMotorRight.setPower(-0.5);
+                }
+                else{
+                    slideMotorLeft.setPower(0);
+                    slideMotorRight.setPower(0);
+                }
             }
             else{
-                slideMotorLeft.setPower(0);
-                slideMotorRight.setPower(0);
+                shoulder.setPosition(0.1);
             }
+
         }
         else if (gamepad1.right_bumper) //out
         {
@@ -222,6 +242,7 @@ public class MyTele extends OpMode {
         {
             intakeMotorLeft.setPower(0);
             intakeMotorRight.setPower(0);
+            isIntaking = false;
         }
 
         if(gamepad1.left_bumper)
@@ -249,9 +270,23 @@ public class MyTele extends OpMode {
         if(touchBack.isPressed() && !isGrabbing && isGrabbed) {
             isGrabbing = true;
             isGrabbed = false;
+            if(shoulder.getPosition() > 0.01){
+                isAdjustingShoulder = true;
+                shoulder.setPosition(0);
+                shoulderAdjustingStartTime = System.currentTimeMillis();
+                if(slideMotorLeft.getCurrentPosition() < -800){
+                    shoulderAdjustingWaitTime = 100;
+                }
+                else{
+                    shoulderAdjustingWaitTime = 1000 - Math.abs(slideMotorLeft.getCurrentPosition());
+                }
+            }
         }
-        else if (isGrabbing) {
-            if(slideMotorLeft.getCurrentPosition() < 0){
+        else if(isGrabbing){
+            if(isAdjustingShoulder && System.currentTimeMillis() - shoulderAdjustingStartTime < shoulderAdjustingWaitTime){
+                //do nothing
+            }
+            else if(slideMotorLeft.getCurrentPosition() < 0){
                 slideMotorLeft.setPower(0.7);
                 slideMotorRight.setPower(0.7);
                 finger.setPosition(0);
@@ -260,10 +295,11 @@ public class MyTele extends OpMode {
                 slideMotorLeft.setPower(0);
                 slideMotorRight.setPower(0);
 
-                wrist.setPosition(0.5);
-                shoulder.setPosition(0.1);
+                wrist.setPosition(0.45);
+                shoulder.setPosition(0);
                 finger.setPosition(1);
                 isGrabbing = false;
+                isAdjustingShoulder = false;
             }
         }
         else if (!touchBack.isPressed() && !isGrabbing && !isGrabbed && slideMotorRight.getCurrentPosition() <-200) {
@@ -329,9 +365,15 @@ public class MyTele extends OpMode {
                 }
             }
         }
-        else {
-            slideMotorLeft.setPower(0);
-            slideMotorRight.setPower(0);
+        else if(!isIntaking && !isTuckStart && !isGrabbing){
+            if(slideMotorLeft.getCurrentPosition() < -200){
+                slideMotorLeft.setPower(-0.05);
+                slideMotorRight.setPower(-0.05);
+            }
+            else{
+                slideMotorLeft.setPower(0);
+                slideMotorRight.setPower(0);
+            }
         }
 
         if (slideMotorLeft.getCurrentPosition()<-250 && slideMotorRight.getCurrentPosition() <-250) {
@@ -374,8 +416,8 @@ public class MyTele extends OpMode {
         else if(isTuckStart){
             if((System.currentTimeMillis() - tuckStartTime) > 2000){
                 if(slideMotorLeft.getCurrentPosition() < 0){
-                    slideMotorLeft.setPower(0.7);
-                    slideMotorRight.setPower(0.7);
+                    slideMotorLeft.setPower(0.85);
+                    slideMotorRight.setPower(0.85);
                 }
                 else{
                     slideMotorLeft.setPower(0);
