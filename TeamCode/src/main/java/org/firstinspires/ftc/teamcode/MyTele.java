@@ -74,12 +74,12 @@ public class MyTele extends OpMode {
         backRight = Range.clip(backRight, -1, 1);
 
         if(gamepad1.left_trigger > 0.5){
-            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backLeft < 0 && frontLeft < 0){//stops wheels to make robot parallel to foundation
+            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 3 && backLeft < 0 && frontLeft < 0){//stops wheels to make robot parallel to foundation
                 backLeft = 0;
                 frontLeft = 0;
             }
 
-            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 1 && backRight < 0 && frontRight < 0){//same for right side
+            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 3 && backRight < 0 && frontRight < 0){//same for right side
                 backRight = 0;
                 frontRight = 0;
             }
@@ -150,7 +150,7 @@ public class MyTele extends OpMode {
         shoulder = hardwareMap.servo.get("shoulder");
         ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
         int shoulderServoPort = shoulder.getPortNumber();
-        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2105);
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2200);
         shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
         shoulder.setPosition(0);
 
@@ -200,15 +200,15 @@ public class MyTele extends OpMode {
             x2 = x2/2;
         }
         if (gamepad1.left_trigger > 0.5){//reduces power by 3 to prepare slowing down in front of foundation
-            x1 = x1/3;//reduce by 3 for now
-            y1 = y1/3;
-            x2 = x2/3;
+            x1 = x1/5;//reduce by 3 for now
+            y1 = y1/5;
+            x2 = x2/5;
         }
         drive(x1,  y1 * -1, x2);
-        if(gamepad1.a){
+        if(gamepad1.b){
             isFerryBot = true;
         }
-        else if(gamepad1.b){
+        else if(gamepad1.a){
             isFerryBot = false;
         }
 
@@ -220,8 +220,8 @@ public class MyTele extends OpMode {
             //set flippers to open
             if(!isFerryBot){
                 if(slideMotorLeft.getCurrentPosition() > -300){
-                    slideMotorLeft.setPower(-0.5);
-                    slideMotorRight.setPower(-0.5);
+                    slideMotorLeft.setPower(-1);
+                    slideMotorRight.setPower(-1);
                 }
                 else{
                     slideMotorLeft.setPower(0);
