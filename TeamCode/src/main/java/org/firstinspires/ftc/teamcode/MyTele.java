@@ -36,6 +36,8 @@ public class MyTele extends OpMode {
     Servo finger;
     Servo shoulder;
 
+    Servo flipper;
+
     DistanceSensor backLeftDistanceSensor;
     DistanceSensor backRightDistanceSensor;
 
@@ -58,8 +60,10 @@ public class MyTele extends OpMode {
     long shoulderAdjustingStartTime;
     boolean isAdjustingShoulder = false;
     boolean isFerryBot = false;
+    boolean isNormalDrive = true;
 
     long shoulderAdjustingWaitTime = 1000;
+    long tuckWaitTime = 2000;
 
     public void drive(float x1, float y1, float x2) {
 
@@ -73,15 +77,41 @@ public class MyTele extends OpMode {
         backLeft = Range.clip(backLeft, -1, 1);
         backRight = Range.clip(backRight, -1, 1);
 
-        if(gamepad1.left_trigger > 0.5){
-            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 3 && backLeft < 0 && frontLeft < 0){//stops wheels to make robot parallel to foundation
-                backLeft = 0;
-                frontLeft = 0;
+        if(gamepad1.left_trigger > 0.5) {
+            telemetry.addData("backLeftDistanceSensor: ", "%f", backLeftDistanceSensor.getDistance(DistanceUnit.INCH));
+            telemetry.addData("backRightDistanceSensor: ", "%f", backRightDistanceSensor.getDistance(DistanceUnit.INCH));
+            float reductionFactor = 3;
+
+            double distanceToFoundation = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
+            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < distanceToFoundation)
+                distanceToFoundation = backRightDistanceSensor.getDistance(DistanceUnit.INCH);
+
+            if (distanceToFoundation < 8) {
+                if (distanceToFoundation < 4) {
+                    reductionFactor = 5;
+                }
+                else
+                    reductionFactor = 4;
             }
 
-            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 3 && backRight < 0 && frontRight < 0){//same for right side
-                backRight = 0;
-                frontRight = 0;
+            backLeft = backLeft/reductionFactor;
+            frontLeft =  frontLeft/reductionFactor;
+            backRight = backRight/reductionFactor;
+            frontRight = frontRight/reductionFactor;
+
+            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 5 && backLeft < 0 && frontLeft < 0){//stops wheels to make robot parallel to foundation
+                if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) > backLeftDistanceSensor.getDistance(DistanceUnit.INCH)) {
+                    backLeft = 0;
+                    frontLeft = 0;
+                }
+            }
+
+            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 5 && backRight < 0 && frontRight < 0){//same for right side
+                if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) > backRightDistanceSensor.getDistance(DistanceUnit.INCH))
+                {
+                    backRight = 0;
+                    frontRight = 0;
+                }
             }
         }
 
@@ -143,16 +173,23 @@ public class MyTele extends OpMode {
         finger = hardwareMap.servo.get("finger");
         ServoControllerEx fingerController = (ServoControllerEx) finger.getController();
         int fingerServoPort = finger.getPortNumber();
-        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1750);
+        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1730);
         fingerController.setServoPwmRange(fingerServoPort, fingerPwmRange);
         finger.setPosition(0);
 
         shoulder = hardwareMap.servo.get("shoulder");
         ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
         int shoulderServoPort = shoulder.getPortNumber();
-        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2200);
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2300);
         shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
         shoulder.setPosition(0);
+
+        flipper = hardwareMap.servo.get("flipper");
+        ServoControllerEx flipperController = (ServoControllerEx) flipper.getController();
+        int flipperServoPort = flipper.getPortNumber();
+        PwmControl.PwmRange flipperPwmRange = new PwmControl.PwmRange(995, 1715);
+        flipperController.setServoPwmRange(flipperServoPort, flipperPwmRange);
+        flipper.setPosition(0);
 
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -183,10 +220,21 @@ public class MyTele extends OpMode {
 //            lastSampleTime = currentSampleTime;
 //        }
 
+        if (gamepad1.x) {
+            isNormalDrive = false;
+        } else if (gamepad1.y) {
+            isNormalDrive = true;
+        }
+
         x1 = gamepad1.left_stick_x;
         y1 = gamepad1.left_stick_y;
         x2 = gamepad1.right_stick_x;
         y2 = gamepad1.right_stick_y;
+
+        if (!isNormalDrive) {
+            x1 *= -1;
+            y1 *= -1;
+        }
 
         double joystickLeftDistance = Math.pow(x1, 2) + Math.pow(y1, 2);
         if (joystickLeftDistance < 0.9)
@@ -199,17 +247,18 @@ public class MyTele extends OpMode {
         {
             x2 = x2/2;
         }
-        if (gamepad1.left_trigger > 0.5){//reduces power by 3 to prepare slowing down in front of foundation
-            x1 = x1/5;//reduce by 3 for now
-            y1 = y1/5;
-            x2 = x2/5;
-        }
         drive(x1,  y1 * -1, x2);
-        if(gamepad1.b){
+        if(gamepad1.dpad_up){
             isFerryBot = true;
         }
-        else if(gamepad1.a){
+        else if(gamepad1.dpad_down){
             isFerryBot = false;
+        }
+
+        if (gamepad1.a) {
+            flipper.setPosition(1);
+        } else if (gamepad1.b) {
+            flipper.setPosition(0);
         }
 
         if (gamepad1.right_trigger > 0.2) //in
@@ -257,6 +306,8 @@ public class MyTele extends OpMode {
         }
 
         if (gamepad2.x) {
+            shoulder.setPosition(0.8);
+        } else if (gamepad2.b) {
             shoulder.setPosition(1);
         }
         grabStone();
@@ -298,6 +349,7 @@ public class MyTele extends OpMode {
                 wrist.setPosition(0.45);
                 shoulder.setPosition(0);
                 finger.setPosition(1);
+                flipper.setPosition(0);
                 isGrabbing = false;
                 isAdjustingShoulder = false;
             }
@@ -412,9 +464,15 @@ public class MyTele extends OpMode {
             tuckStartTime = System.currentTimeMillis();
             isTuckStart = true;
             shoulder.setPosition(0);
+
+            if (slideMotorRight.getCurrentPosition() > -300)
+                tuckWaitTime = 3000;
+            else
+                tuckWaitTime = 2000;
+
         }
         else if(isTuckStart){
-            if((System.currentTimeMillis() - tuckStartTime) > 2000){
+            if((System.currentTimeMillis() - tuckStartTime) > tuckWaitTime){
                 if(slideMotorLeft.getCurrentPosition() < 0){
                     slideMotorLeft.setPower(0.85);
                     slideMotorRight.setPower(0.85);
