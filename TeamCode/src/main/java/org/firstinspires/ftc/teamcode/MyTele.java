@@ -67,6 +67,15 @@ public class MyTele extends OpMode {
 
     public void drive(float x1, float y1, float x2) {
 
+        if (gamepad1.left_trigger > 0.5) {
+            if (Math.abs(x1) < 0.15) {
+                x1 = 0;
+            } else {
+                x1 *= -(float) 1.5;
+            }
+            y1 *= -1;
+        }
+
         float frontLeft = y1 + x1 + x2;
         float frontRight = y1 - x1 - x2;
         float backLeft = y1 - x1 + x2;
@@ -88,10 +97,10 @@ public class MyTele extends OpMode {
 
             if (distanceToFoundation < 8) {
                 if (distanceToFoundation < 4) {
-                    reductionFactor = 5;
+                    reductionFactor = 4;
                 }
                 else
-                    reductionFactor = 4;
+                    reductionFactor = 3;
             }
 
             backLeft = backLeft/reductionFactor;
@@ -99,14 +108,14 @@ public class MyTele extends OpMode {
             backRight = backRight/reductionFactor;
             frontRight = frontRight/reductionFactor;
 
-            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 5 && backLeft < 0 && frontLeft < 0){//stops wheels to make robot parallel to foundation
+            if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) < 5 && backLeft < 0 && frontLeft < 0 && backLeft == frontLeft){//stops wheels to make robot parallel to foundation
                 if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) > backLeftDistanceSensor.getDistance(DistanceUnit.INCH)) {
                     backLeft = 0;
                     frontLeft = 0;
                 }
             }
 
-            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 5 && backRight < 0 && frontRight < 0){//same for right side
+            if (backRightDistanceSensor.getDistance(DistanceUnit.INCH) < 5 && backRight < 0 && frontRight < 0 && backRight == frontRight){//same for right side
                 if (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) > backRightDistanceSensor.getDistance(DistanceUnit.INCH))
                 {
                     backRight = 0;
@@ -173,14 +182,14 @@ public class MyTele extends OpMode {
         finger = hardwareMap.servo.get("finger");
         ServoControllerEx fingerController = (ServoControllerEx) finger.getController();
         int fingerServoPort = finger.getPortNumber();
-        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1730);
+        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(899, 1720);
         fingerController.setServoPwmRange(fingerServoPort, fingerPwmRange);
         finger.setPosition(0);
 
         shoulder = hardwareMap.servo.get("shoulder");
         ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
         int shoulderServoPort = shoulder.getPortNumber();
-        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2300);
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2400);
         shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
         shoulder.setPosition(0);
 
@@ -220,21 +229,10 @@ public class MyTele extends OpMode {
 //            lastSampleTime = currentSampleTime;
 //        }
 
-        if (gamepad1.x) {
-            isNormalDrive = false;
-        } else if (gamepad1.y) {
-            isNormalDrive = true;
-        }
-
         x1 = gamepad1.left_stick_x;
         y1 = gamepad1.left_stick_y;
         x2 = gamepad1.right_stick_x;
         y2 = gamepad1.right_stick_y;
-
-        if (!isNormalDrive) {
-            x1 *= -1;
-            y1 *= -1;
-        }
 
         double joystickLeftDistance = Math.pow(x1, 2) + Math.pow(y1, 2);
         if (joystickLeftDistance < 0.9)
@@ -305,9 +303,11 @@ public class MyTele extends OpMode {
             pullerRight.setPosition(1);
         }
 
-        if (gamepad2.x) {
+        if (gamepad2.dpad_down) {
+            shoulder.setPosition(0.6);
+        } else if (gamepad2.dpad_left) {
             shoulder.setPosition(0.8);
-        } else if (gamepad2.b) {
+        } else if (gamepad2.dpad_up){
             shoulder.setPosition(1);
         }
         grabStone();
@@ -469,6 +469,9 @@ public class MyTele extends OpMode {
                 tuckWaitTime = 3000;
             else
                 tuckWaitTime = 2000;
+            if(shoulder.getPosition() >= 0.8){
+                tuckWaitTime += 500;
+            }
 
         }
         else if(isTuckStart){
