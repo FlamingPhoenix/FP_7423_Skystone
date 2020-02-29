@@ -43,6 +43,8 @@ public class MyTele extends OpMode {
 
     TouchSensor touchBack;
 
+    Servo light;
+
     public long tuckStartTime;
     public boolean isTuckStart = false;
 //    long lastSampleTime;
@@ -161,14 +163,14 @@ public class MyTele extends OpMode {
         pullerLeft = hardwareMap.servo.get("pullerLeft");
         ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
         int pullerLeftServoPort = pullerLeft.getPortNumber();
-        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 1335);
+        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(1133, 1760);
         pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
         pullerLeft.setPosition(0);
 
         pullerRight = hardwareMap.servo.get("pullerRight");
         ServoControllerEx pullerRightController = (ServoControllerEx) pullerRight.getController();
         int pullerRightServoPort = pullerRight.getPortNumber();
-        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(899, 2105);
+        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(1088, 1860);
         pullerRightController.setServoPwmRange(pullerRightServoPort, pullerRightPwmRange);
         pullerRight.setPosition(0);
 
@@ -189,7 +191,7 @@ public class MyTele extends OpMode {
         shoulder = hardwareMap.servo.get("shoulder");
         ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
         int shoulderServoPort = shoulder.getPortNumber();
-        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1600, 2400);
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1480, 2300);
         shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
         shoulder.setPosition(0);
 
@@ -200,6 +202,11 @@ public class MyTele extends OpMode {
         flipperController.setServoPwmRange(flipperServoPort, flipperPwmRange);
         flipper.setPosition(0);
 
+        light = hardwareMap.servo.get("lights");
+        ServoControllerEx lightController = (ServoControllerEx) light.getController();
+        int lightServoPort = light.getPortNumber();
+        light.setPosition(0.28);
+
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -207,6 +214,7 @@ public class MyTele extends OpMode {
         backRightDistanceSensor = hardwareMap.get(DistanceSensor.class, "backRightDistanceSensor");
 
         touchBack = hardwareMap.get(TouchSensor.class, "touchSensor");
+
 
 
 //        lastSampleTime = System.currentTimeMillis();
