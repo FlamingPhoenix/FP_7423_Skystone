@@ -302,12 +302,12 @@ public class MyTele extends OpMode {
 
         if(gamepad1.left_bumper)
         {
-            pullerLeft.setPosition(0);
+            pullerLeft.setPosition(1);
             pullerRight.setPosition(0);
         }
         else if(gamepad1.left_trigger > 0.2)
         {
-            pullerLeft.setPosition(1);
+            pullerLeft.setPosition(0);
             pullerRight.setPosition(1);
         }
 
@@ -355,7 +355,7 @@ public class MyTele extends OpMode {
                 slideMotorRight.setPower(0);
 
                 wrist.setPosition(0.45);
-                shoulder.setPosition(0);
+                shoulder.setPosition(0.05);
                 finger.setPosition(1);
                 flipper.setPosition(0);
                 isGrabbing = false;
