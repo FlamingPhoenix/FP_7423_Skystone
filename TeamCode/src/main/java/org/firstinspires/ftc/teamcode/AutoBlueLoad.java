@@ -90,7 +90,7 @@ public class AutoBlueLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        Drive(0.9F, distanceZ + 1, Direction.BACKWARD);
+        Drive(0.9F, distanceZ + 1, Direction.BACKWARD); // changed from distanceZ
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
 

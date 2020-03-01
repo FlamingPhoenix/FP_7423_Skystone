@@ -84,7 +84,7 @@ public class AutoRedLoad extends AutoBase {
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
 
-        Drive(0.8F, distanceZ, Direction.BACKWARD);
+        Drive(0.8F, distanceZ, Direction.BACKWARD); // changed from distance - 1
 
         imu.resetAndStart(Direction.COUNTERCLOCKWISE);
 
