@@ -191,7 +191,7 @@ public class MyTele extends OpMode {
         shoulder = hardwareMap.servo.get("shoulder");
         ServoControllerEx shoulderController = (ServoControllerEx) shoulder.getController();
         int shoulderServoPort = shoulder.getPortNumber();
-        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1480, 2300);
+        PwmControl.PwmRange shoulderPwmRange = new PwmControl.PwmRange(1470, 2300);
         shoulderController.setServoPwmRange(shoulderServoPort, shoulderPwmRange);
         shoulder.setPosition(0);
 
