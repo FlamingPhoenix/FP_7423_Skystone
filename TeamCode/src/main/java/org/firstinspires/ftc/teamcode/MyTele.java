@@ -326,6 +326,10 @@ public class MyTele extends OpMode {
             tuckArm();
         }
 
+//        if (gamepad2.left_stick_button) { TODO
+//            int shiftAmount = slideMotorLeft.getCurrentPosition();
+//        }
+
         if(touchBack.isPressed() && !isGrabbing && isGrabbed) {
             isGrabbing = true;
             isGrabbed = false;
@@ -365,6 +369,8 @@ public class MyTele extends OpMode {
         else if (!touchBack.isPressed() && !isGrabbing && !isGrabbed && slideMotorRight.getCurrentPosition() <-200) {
             isGrabbed = true;
         }
+
+        telemetry.addData("backLeftDistanceSensor: ", "%d", slideMotorLeft.getCurrentPosition());
 
         telemetry.update();
     }
