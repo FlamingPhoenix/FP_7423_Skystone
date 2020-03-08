@@ -47,13 +47,6 @@ public class MyTele extends OpMode {
 
     public long tuckStartTime;
     public boolean isTuckStart = false;
-//    long lastSampleTime;
-//    long currentSampleTime;
-//
-//    double approachingSpeed;
-//
-//    double lastDistanceLeft;
-//    double lastDistanceRight;
 
     boolean isGrabbing = false;
     boolean isGrabbed = true;
@@ -62,10 +55,16 @@ public class MyTele extends OpMode {
     long shoulderAdjustingStartTime;
     boolean isAdjustingShoulder = false;
     boolean isFerryBot = false;
-    boolean isNormalDrive = true;
 
     long shoulderAdjustingWaitTime = 1000;
     long tuckWaitTime = 2000;
+
+    boolean isPlacingStone = false;
+    boolean isIntakeDone = false;
+
+    int currentHeight = 0;
+    int currentLevel = 0;
+    int gotoHeight = 0;
 
     public void drive(float x1, float y1, float x2) {
 
@@ -73,7 +72,7 @@ public class MyTele extends OpMode {
             if (Math.abs(x1) < 0.15) {
                 x1 = 0;
             } else {
-                x1 *= -(float) 1.5;
+                x1 *= -(float) 1.8;
             }
             y1 *= -1;
         }
@@ -163,16 +162,16 @@ public class MyTele extends OpMode {
         pullerLeft = hardwareMap.servo.get("pullerLeft");
         ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
         int pullerLeftServoPort = pullerLeft.getPortNumber();
-        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(1133, 1760);
+        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 1300);
         pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
         pullerLeft.setPosition(0);
 
         pullerRight = hardwareMap.servo.get("pullerRight");
         ServoControllerEx pullerRightController = (ServoControllerEx) pullerRight.getController();
         int pullerRightServoPort = pullerRight.getPortNumber();
-        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(1088, 1860);
+        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(1680, 2105);
         pullerRightController.setServoPwmRange(pullerRightServoPort, pullerRightPwmRange);
-        pullerRight.setPosition(0);
+        pullerRight.setPosition(1);
 
         wrist = hardwareMap.servo.get("wrist");
         ServoControllerEx wristController = (ServoControllerEx) wrist.getController();
@@ -214,28 +213,10 @@ public class MyTele extends OpMode {
         backRightDistanceSensor = hardwareMap.get(DistanceSensor.class, "backRightDistanceSensor");
 
         touchBack = hardwareMap.get(TouchSensor.class, "touchSensor");
-
-
-
-//        lastSampleTime = System.currentTimeMillis();
-//        lastDistanceLeft = backLeftDistanceSensor.getDistance(DistanceUnit.INCH);
     }
 
     @Override
     public void loop() {
-//        currentSampleTime = System.currentTimeMillis();
-//        if (currentSampleTime - lastSampleTime > 100) {
-//            double approachingSpeedLeft = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceLeft) / (currentSampleTime - lastSampleTime);
-//            double approachingSpeedRight = (backLeftDistanceSensor.getDistance(DistanceUnit.INCH) - lastDistanceRight) / (currentSampleTime - lastSampleTime);
-//            telemetry.addData("approachingSpeedLeft: ", "%f", approachingSpeedLeft);
-//            telemetry.addData("approachingSpeedRight: ", "%f", approachingSpeedRight);
-//            telemetry.update();
-//
-//           if (Math.abs(approachingSpeedLeft - approachingSpeedRight) < 2) {
-//                approachingSpeed = approachingSpeedLeft;
-//           }
-//            lastSampleTime = currentSampleTime;
-//        }
 
         x1 = gamepad1.left_stick_x;
         y1 = gamepad1.left_stick_y;
@@ -261,7 +242,7 @@ public class MyTele extends OpMode {
             isFerryBot = false;
         }
 
-        if (gamepad1.a) {
+        if (gamepad1.a && !isIntaking && isIntakeDone) {
             flipper.setPosition(1);
         } else if (gamepad1.b) {
             flipper.setPosition(0);
@@ -272,6 +253,7 @@ public class MyTele extends OpMode {
             intakeMotorLeft.setPower(1);
             intakeMotorRight.setPower(1);
             isIntaking = true;
+            isIntakeDone = false;
             //set flippers to open
             if(!isFerryBot){
                 if(slideMotorLeft.getCurrentPosition() > -300){
@@ -292,12 +274,14 @@ public class MyTele extends OpMode {
         {
             intakeMotorLeft.setPower(-1);
             intakeMotorRight.setPower(-1);
+            isIntakeDone = false;
         }
         else //stop when not in or out
         {
             intakeMotorLeft.setPower(0);
             intakeMotorRight.setPower(0);
             isIntaking = false;
+            isIntakeDone = true;
         }
 
         if(gamepad1.left_bumper)
@@ -311,50 +295,46 @@ public class MyTele extends OpMode {
             pullerRight.setPosition(1);
         }
 
-        if (gamepad2.dpad_down) {
+        if (gamepad2.a) {
             shoulder.setPosition(0.6);
-        } else if (gamepad2.dpad_left) {
+        } else if (gamepad2.x) {
             shoulder.setPosition(0.8);
-        } else if (gamepad2.dpad_up){
+        } else if (gamepad2.y) {
             shoulder.setPosition(1);
         }
         grabStone();
         stackStone();
         moveArm();
 
-        if(gamepad2.y || isTuckStart){
+        if(gamepad2.dpad_down || isTuckStart) {
             tuckArm();
         }
-
-//        if (gamepad2.left_stick_button) { TODO
-//            int shiftAmount = slideMotorLeft.getCurrentPosition();
-//        }
 
         if(touchBack.isPressed() && !isGrabbing && isGrabbed) {
             isGrabbing = true;
             isGrabbed = false;
-            if(shoulder.getPosition() > 0.01){
+            if(shoulder.getPosition() > 0.01) {
                 isAdjustingShoulder = true;
                 shoulder.setPosition(0);
                 shoulderAdjustingStartTime = System.currentTimeMillis();
-                if(slideMotorLeft.getCurrentPosition() < -800){
+                if(slideMotorLeft.getCurrentPosition() < -800) {
                     shoulderAdjustingWaitTime = 100;
                 }
-                else{
+                else {
                     shoulderAdjustingWaitTime = 1000 - Math.abs(slideMotorLeft.getCurrentPosition());
                 }
             }
         }
         else if(isGrabbing){
-            if(isAdjustingShoulder && System.currentTimeMillis() - shoulderAdjustingStartTime < shoulderAdjustingWaitTime){
+            if(isAdjustingShoulder && System.currentTimeMillis() - shoulderAdjustingStartTime < shoulderAdjustingWaitTime) {
                 //do nothing
             }
-            else if(slideMotorLeft.getCurrentPosition() < 0){
+            else if(slideMotorLeft.getCurrentPosition() < 0) {
                 slideMotorLeft.setPower(0.7);
                 slideMotorRight.setPower(0.7);
                 finger.setPosition(0);
             }
-            else{
+            else {
                 slideMotorLeft.setPower(0);
                 slideMotorRight.setPower(0);
 
@@ -370,7 +350,8 @@ public class MyTele extends OpMode {
             isGrabbed = true;
         }
 
-        telemetry.addData("backLeftDistanceSensor: ", "%d", slideMotorLeft.getCurrentPosition());
+        if (isPlacingStone || gamepad2.left_stick_button) //TODO
+            placeStone();
 
         telemetry.update();
     }
@@ -443,17 +424,26 @@ public class MyTele extends OpMode {
         }
 
         if (slideMotorLeft.getCurrentPosition()<-250 && slideMotorRight.getCurrentPosition() <-250) {
-            //baby-proof: shoulder no move if lower than -150
-            if(gamepad2.right_stick_y < -0.3){
-                if(shoulder.getPosition() < 1){
-                    shoulder.setPosition(shoulder.getPosition() + 0.05);
+            if(gamepad2.right_stick_x > 0.5){
+                if(wrist.getPosition() < 1){
+                    wrist.setPosition(wrist.getPosition() + 0.05);
                 }
             }
-            else if(gamepad2.right_stick_y > 0.3){
-                if(shoulder.getPosition() > 0){
-                    shoulder.setPosition((shoulder.getPosition() - 0.05));
+            else if(gamepad2.right_stick_x < -0.5){
+                if(wrist.getPosition() > 0){
+                    wrist.setPosition((wrist.getPosition() - 0.05));
                 }
             }
+//            if(gamepad2.right_stick_y < -0.3){
+//                if(shoulder.getPosition() < 1){
+//                    shoulder.setPosition(shoulder.getPosition() + 0.05);
+//                }
+//            }
+//            else if(gamepad2.right_stick_y > 0.3){
+//                if(shoulder.getPosition() > 0){
+//                    shoulder.setPosition((shoulder.getPosition() - 0.05));
+//                }
+//            }
         }
 
         //telemetry.addData("Slides: ", String.format("left: %5d, right: %5d", slideMotorLeft.getCurrentPosition(), slideMotorRight.getCurrentPosition()));
@@ -472,9 +462,54 @@ public class MyTele extends OpMode {
         }
     }
 
-    public void tuckArm(){
+    public void placeStone() {
+        int toleranceHeight = 20;
+
+        if (!isPlacingStone) {
+            if (shoulder.getPosition() >= 0.5 && shoulder.getPosition() < 0.7) { // 0.6
+                currentHeight = Math.abs(slideMotorLeft.getCurrentPosition()) - 85 - toleranceHeight;
+                currentLevel = (int) Math.floor(currentHeight / 130);
+                gotoHeight = currentLevel * 130 + 85;
+                isPlacingStone = true;
+            } else if (shoulder.getPosition() >= 0.7 && shoulder.getPosition() < 0.9) { // 0.8
+                currentHeight = Math.abs(slideMotorLeft.getCurrentPosition()) - toleranceHeight;
+                currentLevel = (int) (Math.floor(currentHeight / 130)) + 1;
+                gotoHeight = currentLevel * 130;
+                isPlacingStone = true;
+            } else if (shoulder.getPosition() >= 0.9) { // 1
+                currentHeight = Math.abs(slideMotorLeft.getCurrentPosition()) - toleranceHeight;
+                currentLevel = (int) (Math.floor(currentHeight / 130)) + 2;
+                gotoHeight = currentLevel * 130;
+                isPlacingStone = true;
+            }
+
+            gotoHeight *= -1;
+        } else {
+            if (slideMotorLeft.getCurrentPosition() < gotoHeight) {
+                if (slideMotorLeft.getCurrentPosition() < -200) {
+                    slideMotorLeft.setPower(0.8);
+                    slideMotorRight.setPower(0.8);
+                } else if (slideMotorLeft.getCurrentPosition() < -50) {
+                    slideMotorLeft.setPower(0.30);
+                    slideMotorRight.setPower(0.30);
+                } else if (slideMotorLeft.getCurrentPosition() < -25) {
+                    slideMotorLeft.setPower(0.25);
+                    slideMotorRight.setPower(0.25);
+                } else {
+                    slideMotorLeft.setPower(0.1);
+                    slideMotorRight.setPower(0.1);
+                }
+            } else {
+                slideMotorLeft.setPower(0);
+                slideMotorRight.setPower(0);
+                isPlacingStone = false;
+            }
+        }
+    }
+
+    public void tuckArm() {
         //telemetry.addData("tuckArm: ", String.format("isTuckStart: %5b, tuckStartTime: %5d", isTuckStart, tuckStartTime));
-        if(!isTuckStart){
+        if (!isTuckStart) {
             tuckStartTime = System.currentTimeMillis();
             isTuckStart = true;
             shoulder.setPosition(0);
@@ -483,18 +518,25 @@ public class MyTele extends OpMode {
                 tuckWaitTime = 3000;
             else
                 tuckWaitTime = 2000;
-            if(shoulder.getPosition() >= 0.8){
-                tuckWaitTime += 500;
-            }
 
-        }
-        else if(isTuckStart){
-            if((System.currentTimeMillis() - tuckStartTime) > tuckWaitTime){
-                if(slideMotorLeft.getCurrentPosition() < 0){
+            if (shoulder.getPosition() >= 0.85) {
+                tuckWaitTime += 1500;
+            }  else if (shoulder.getPosition() >= 0.65) {
+                tuckWaitTime += 1000;
+            }
+        } else if (isTuckStart) {
+
+            if ((System.currentTimeMillis() - tuckStartTime) > tuckWaitTime) {
+                if (slideMotorLeft.getCurrentPosition() < -200) {
                     slideMotorLeft.setPower(0.85);
                     slideMotorRight.setPower(0.85);
-                }
-                else{
+                } else if (slideMotorLeft.getCurrentPosition() < -100) {
+                    slideMotorLeft.setPower(0.25);
+                    slideMotorRight.setPower(0.25);
+                } else if (slideMotorLeft.getCurrentPosition() < -50) {
+                    slideMotorLeft.setPower(0.20);
+                    slideMotorRight.setPower(0.20);
+                } else {
                     slideMotorLeft.setPower(0);
                     slideMotorRight.setPower(0);
                     isTuckStart = false;

@@ -120,16 +120,16 @@ public abstract class AutoBase extends LinearOpMode {
         pullerLeft = hardwareMap.servo.get("pullerLeft");
         ServoControllerEx pullerLeftController = (ServoControllerEx) pullerLeft.getController();
         int pullerLeftServoPort = pullerLeft.getPortNumber();
-        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 1335);
+        PwmControl.PwmRange pullerLeftPwmRange = new PwmControl.PwmRange(899, 1300);
         pullerLeftController.setServoPwmRange(pullerLeftServoPort, pullerLeftPwmRange);
-        pullerLeft.setPosition(1);
+        pullerLeft.setPosition(0);
 
         pullerRight = hardwareMap.servo.get("pullerRight");
         ServoControllerEx pullerRightController = (ServoControllerEx) pullerRight.getController();
         int pullerRightServoPort = pullerRight.getPortNumber();
-        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(899, 2105);
+        PwmControl.PwmRange pullerRightPwmRange = new PwmControl.PwmRange(1680, 2105);
         pullerRightController.setServoPwmRange(pullerRightServoPort, pullerRightPwmRange);
-        pullerRight.setPosition(0);
+        pullerRight.setPosition(1);
     }
 
     private float Max(float x1, float x2, float x3, float x4) {
@@ -168,18 +168,6 @@ public abstract class AutoBase extends LinearOpMode {
         }
         return 0;
     }
-
-    public void StrafeUntilBlack() {
-
-    }
-
-    public void color() {
-        telemetry.addData("Red:", "%d", colorSensor.red());
-        telemetry.addData("Green:", "%d", colorSensor.green());
-        telemetry.addData("Blue:", "%d", colorSensor.blue());
-        telemetry.update();
-    }
-
 
     public double getObstacleDistance() {
         if (distanceSensor != null) {
